@@ -11,6 +11,9 @@ import ply.yacc as yacc
 # Get the token map
 tokens = clex.tokens
 
+# Set start point
+start = 'statement'
+
 # translation-unit:
 
 def p_translation_unit_1(t):
@@ -855,8 +858,10 @@ import profile
 # Build the grammar
 
 parser = yacc.yacc(method='LALR')
+# parser = yacc.yacc()
 
 #profile.run("yacc.yacc(method='LALR')")
 
-data = raw_input()
-parser.parse(data, debug=1)
+if __name__ == "__main__":
+    data = raw_input()
+    parser.parse(data, debug=1)

@@ -50,6 +50,12 @@ tokens = reserved + (
 # Completely ignored characters
 t_ignore           = ' \t\x0c'
 
+# Comments
+def t_comment(t):
+    r'(?:/\*(.|\n)*?\*/)|(?://.*)'
+    print t
+    t.lexer.lineno += t.value.count('\n')
+
 # Newlines
 def t_NEWLINE(t):
     r'\n+'
@@ -137,11 +143,6 @@ t_SCONST = r'\"([^\\\n]|(\\.))*?\"'
 # Character constant 'c' or L'c'
 t_CCONST = r'(L)?\'([^\\\n]|(\\.))*?\''
 
-# Comments
-def t_comment(t):
-    r'/\*(.|\n)*?\*/|//.*\n'
-    t.lexer.lineno += t.value.count('\n')
-
 # Preprocessor directive (ignored)
 def t_preprocessor(t):
     r'\#(.)*?\n'
@@ -151,11 +152,7 @@ def t_error(t):
     print("Illegal character %s" % repr(t.value[0]))
     t.lexer.skip(1)
     
-lexer = lex.lex(optimize=1)
+# lexer = lex.lex(optimize=1)
+lexer = lex.lex()
 if __name__ == "__main__":
     lex.runmain(lexer)
-
-    
-
-
-
