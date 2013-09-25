@@ -1,0 +1,7 @@
+Rd = Rn + Rm; //simple add
+/*
+Value * Rn = getIntReg(RN);
+Value * Rm = getIntReg(RM);
+Value * Rd = builder->CreateAdd(rn, rm);
+setIntReg(RD, Rd);
+*/
