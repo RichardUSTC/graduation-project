@@ -1,0 +1,4 @@
+//LSL(logical shift left)
+if(SHIFT == 0){
+    tempRm = Rm << IMM6;
+}
