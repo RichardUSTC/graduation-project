@@ -1,3 +1,5 @@
-uint64_t scal=1;
-for(uint32_t i = 0; i < scale; i++)
-    scal = scal * 2;
+{
+	uint64_t scal=1;
+	for(uint32_t i = 0; i < scale; i++)
+	    scal = scal * 2;
+}

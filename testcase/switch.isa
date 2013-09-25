@@ -1,14 +1,16 @@
-switch(RMODE(FPCR)){
-    case 0x0:
-        fesetround(FE_TONEAREST);
-        break;
-    case 01:
-        fesetround(FE_UPWARD);
-        break;
-    case 0b10:
-        fesetround(FE_DOWNWARD);
-        break;
-    case 3:
-        fesetround(FE_TOWARDZERO);
-        break;
+{
+    switch(RMODE(FPCR)){
+        case 0x0:
+            fesetround(FE_TONEAREST);
+            break;
+        case 01:
+            fesetround(FE_UPWARD);
+            break;
+        case 0b10:
+            fesetround(FE_DOWNWARD);
+            break;
+        case 3:
+            fesetround(FE_TOWARDZERO);
+            break;
+    }
 }
