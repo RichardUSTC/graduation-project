@@ -12,7 +12,7 @@ import ply.yacc as yacc
 tokens = clex.tokens
 
 # Set start point
-start = 'statement'
+start = 'compound_statement'
 
 # translation-unit:
 
