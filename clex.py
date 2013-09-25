@@ -124,10 +124,16 @@ t_ELLIPSIS         = r'\.\.\.'
 reserved_map = { }
 for r in reserved:
     reserved_map[r.lower()] = r
+reserved_type_id = (
+    "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+    "int8_t", "int16_t", "int32_t", "int64_t",
+    )
 
 def t_ID(t):
     r'[A-Za-z_][\w_]*'
     t.type = reserved_map.get(t.value,"ID")
+    if t.value in reserved_type_id:
+        t.type = "TYPEID"
     return t
 
 # Integer literal
