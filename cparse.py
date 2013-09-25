@@ -863,5 +863,9 @@ parser = yacc.yacc(method='LALR')
 #profile.run("yacc.yacc(method='LALR')")
 
 if __name__ == "__main__":
-    data = raw_input()
-    parser.parse(data, debug=1)
+    if len(sys.argv) != 2:
+        print("Usage: %s <input_file_name>" % sys.argv[0])
+        sys.exit(-1)
+    with open(sys.argv[1], "r") as fIn:
+        data = fIn.read()
+        parser.parse(data, debug=1)
