@@ -2,13 +2,13 @@ switch(RMODE(FPCR)){
     case 0x0:
         fesetround(FE_TONEAREST);
         break;
-    case 0x1:
+    case 01:
         fesetround(FE_UPWARD);
         break;
-    case 0x2:
+    case 0b10:
         fesetround(FE_DOWNWARD);
         break;
-    case 0x3:
+    case 3:
         fesetround(FE_TOWARDZERO);
         break;
 }
