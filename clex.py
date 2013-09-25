@@ -48,12 +48,11 @@ tokens = reserved + (
     )
 
 # Completely ignored characters
-t_ignore           = ' \t\x0c'
+t_ignore           = ' \t\x0c\r'
 
 # Comments
 def t_comment(t):
     r'(?:/\*(.|\n)*?\*/)|(?://.*)'
-    print t
     t.lexer.lineno += t.value.count('\n')
 
 # Newlines
