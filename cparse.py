@@ -5,8 +5,21 @@
 # -----------------------------------------------------------------------------
 
 import sys
+import exceptions
 import clex
 import ply.yacc as yacc
+import syntax_node
+import predef
+import pdb
+
+class UnhandledSyntaxError(Exception):
+    def __init__(self, lineno, production):
+        self.lineno = lineno
+        self.production = production
+    def __str__(self):
+        return self.lineno+':' + production
+    def __repr__(self):
+        return self.__str__()
 
 # Get the token map
 tokens = clex.tokens
@@ -598,6 +611,7 @@ def p_assignment_operator(t):
                         | OREQUAL
                         | XOREQUAL
                         '''
+    t[0] = t[1]
     pass
 
 # conditional-expression
@@ -733,6 +747,7 @@ def p_additive_expression_3(t):
 
 def p_multiplicative_expression_1(t):
     'multiplicative_expression : cast_expression'
+    t[0] = t[1]
     pass
 
 def p_multiplicative_expression_2(t):
@@ -751,6 +766,7 @@ def p_multiplicative_expression_4(t):
 
 def p_cast_expression_1(t):
     'cast_expression : unary_expression'
+    t[0] = t[1]
     pass
 
 def p_cast_expression_2(t):
@@ -760,6 +776,7 @@ def p_cast_expression_2(t):
 # unary-expression:
 def p_unary_expression_1(t):
     'unary_expression : postfix_expression'
+    t[0] = t[1]
     pass
 
 def p_unary_expression_2(t):
@@ -795,7 +812,7 @@ def p_unary_operator(t):
 # postfix-expression:
 def p_postfix_expression_1(t):
     'postfix_expression : primary_expression'
-    pass
+    t[0] = t[1]
 
 def p_postfix_expression_2(t):
     'postfix_expression : postfix_expression LBRACKET expression RBRACKET'
@@ -826,11 +843,23 @@ def p_postfix_expression_8(t):
     pass
 
 # primary-expression:
-def p_primary_expression(t):
-    '''primary_expression :  ID
-                        |  constant
-                        |  SCONST
-                        |  LPAREN expression RPAREN'''
+def p_primary_expression_1(t):
+    'primary_expression :  ID'
+    try:
+        t[0] = predef.predefinedVariables[t[1]]
+    except KeyError:
+        raise UnhandledSyntaxError(t.lexer.lineno, p_primary_expression_1.__doc__)
+
+def p_primary_expression_2(t):
+    'primary_expression :  constant'
+    pass
+
+def p_primary_expression_3(t):
+    'primary_expression : SCONST'
+    pass
+
+def p_primary_expression_3(t):
+    'primary_expression : LPAREN expression RPAREN'
     pass
 
 # argument-expression-list:
