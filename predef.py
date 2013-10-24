@@ -5,8 +5,9 @@ predefinedTypeID = (
     "int8_t", "int16_t", "int32_t", "int64_t", "Twin64_t",
     )
 
-predefinedVariables = {
-	"Rd": syntax_node.PredefinedVariable("Rd", "int"),
-	"Rm": syntax_node.PredefinedVariable("Rm", "int"),
-	"Rn": syntax_node.PredefinedVariable("Rn", "int"),
+predefinedValues = {
+	"Rd": syntax_node.PredefinedRegister("Rd", "int"),
+	"Rm": syntax_node.PredefinedRegister("Rm", "int"),
+	"Rn": syntax_node.PredefinedRegister("Rn", "int"),
+	"SHIFT": syntax_node.PredefinedConstant("SHIFT", "int")
 	}
