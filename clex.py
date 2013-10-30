@@ -125,8 +125,8 @@ reserved_map = { }
 for r in reserved:
     reserved_map[r.lower()] = r
 
-import predef
-type_id = predef.predefinedTypeID
+import translator
+type_id = translator.predefinedTypeID
 
 def t_ID(t):
     r'[A-Za-z_][\w_]*'

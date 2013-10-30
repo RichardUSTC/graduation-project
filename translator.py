@@ -8,16 +8,11 @@ class UnhandledTranslationError(Exception):
 	def __repr__(self):
 		return self.__repr__()
 
-def id():
+def getTempName():
 	i = 0;
 	while True:
-		yield i
+		yield 't'+str(i)
 		i = i+1
-
-def getTempName():
-	return "t"+str(id())
-
-symbolTable = {}
 
 class TranslationResult(object):
 	def __init__(self, value, code):
@@ -29,7 +24,6 @@ class TranslationResult(object):
 		return self.__str__()
 
 class Expression(object):
-
 	pass
 
 class BinaryOperandExpression(Expression):
@@ -96,3 +90,39 @@ class StringConstant(Constant):
 	def __init__(self, value):
 		self.type = 'string'
 		self.value = value
+
+predefinedTypeID = (
+    "uint8_t", "uint16_t", "uint32_t", "uint64_t",
+    "int8_t", "int16_t", "int32_t", "int64_t", "Twin64_t",
+    )
+
+predefinedValues = {
+	"Rd": PredefinedRegister("Rd", "int"),
+	"Rm": PredefinedRegister("Rm", "int"),
+	"Rn": PredefinedRegister("Rn", "int"),
+	"SHIFT": PredefinedConstant("SHIFT", "int")
+	}
+
+class SymbolTable(object):
+	symbolStack = [predefinedValues]
+	@classmethod
+	def find(cls, name):
+		for d in cls.symbolStack[::-1]:
+			try:
+				var = d[name]
+				return var
+			except KeyError:
+				pass
+		return None
+	@classmethod
+	def put(cls, name, var):
+		if len(cls.symbolStack) > 1:
+			cls.symbolStack[-1][name] = var
+		else:
+			raise Exception()
+	@classmethod
+	def push(cls):
+		symbolStack.append({})
+	@classmethod
+	def pop(cls):
+		symbolStack.pop()
