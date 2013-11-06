@@ -1,3 +1,3 @@
 {
-	int a = 1;
+	unsigned int a = -1, *b=0, **c;
 }
