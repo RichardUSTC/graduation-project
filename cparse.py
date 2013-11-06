@@ -581,7 +581,7 @@ def p_compound_statement_3(t):
 
 def p_compound_statement_4(t):
     'compound_statement : LBRACE RBRACE'
-    raise UnhandledSyntaxError
+    t[0] = None
 
 # statement-list:
 
@@ -591,17 +591,17 @@ def p_statement_list_1(t):
 
 def p_statement_list_2(t):
     'statement_list : statement_list statement'
-    t[0] = t[1].append(t[2])
+    t[0] = t[1] + [ t[2] ]
 
 # selection-statement
 
 def p_selection_statement_1(t):
     'selection_statement : IF LPAREN expression RPAREN statement'
-    raise UnhandledSyntaxError
+    t[0] = translator.IfStatement(condition=t[3], truePart=t[5])
 
 def p_selection_statement_2(t):
     'selection_statement : IF LPAREN expression RPAREN statement ELSE statement '
-    raise UnhandledSyntaxError
+    t[0] = translator.IfStatement(condition=t[3], truePart=t[5], falsePart=t[7])
 
 def p_selection_statement_3(t):
     'selection_statement : SWITCH LPAREN expression RPAREN statement '
@@ -755,7 +755,7 @@ def p_equality_expression_1(t):
 
 def p_equality_expression_2(t):
     'equality_expression : equality_expression EQ relational_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_equality_expression_3(t):
     'equality_expression : equality_expression NE relational_expression'
@@ -791,11 +791,11 @@ def p_shift_expression_1(t):
 
 def p_shift_expression_2(t):
     'shift_expression : shift_expression LSHIFT additive_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_shift_expression_3(t):
     'shift_expression : shift_expression RSHIFT additive_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # additive-expression
 

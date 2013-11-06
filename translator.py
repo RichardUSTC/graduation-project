@@ -169,9 +169,11 @@ class StringConstant(Constant):
 		self.type = PointerType(CharType())
 		self.value = value
 
-class Declarator(object):
+class Statement(object):
 	def __repr__(self):
 		return self.__str__()
+
+class Declarator(Statement): pass
 
 class VariableDeclarator(Declarator):
 	def __init__(self):
@@ -186,6 +188,27 @@ class VariableDeclarator(Declarator):
 			s += " " + str(self.variable)
 		if self.initializer != None:
 			s += " = " + str(self.initializer)
+		return s
+
+class IfStatement(Statement):
+	def __init__(self, condition=None, truePart=None, falsePart=None):
+		self.condition = condition
+		self.truePart = truePart
+		self.falsePart = falsePart
+	def __str__(self):
+		s = "if ("
+		if self.condition != None:
+			s += str(self.condition)
+		else:
+			s += "unknown"
+		s += "){ "
+		if self.truePart != None:
+			s += str(self.truePart)
+		s += " }"
+		if self.falsePart != None:
+			s += "else{ "
+			s += str(self.falsePart)
+			s += " }"
 		return s
 
 predefinedTypeID = (
