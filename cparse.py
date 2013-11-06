@@ -563,25 +563,25 @@ def p_labeled_statement_3(t):
 # expression-statement:
 def p_expression_statement(t):
     'expression_statement : expression_opt SEMI'
-    t[0] = t[1]
+    t[0] = translator.CompoundStatement(t[1])
 
 # compound-statement:
 
 def p_compound_statement_1(t):
     'compound_statement : LBRACE declaration_list statement_list RBRACE'
-    raise UnhandledSyntaxError
+    t[0] = translator.CompoundStatement(t[2] + t[3])
 
 def p_compound_statement_2(t):
     'compound_statement : LBRACE statement_list RBRACE'
-    t[0] = t[2]
+    t[0] = translator.CompoundStatement(t[2])
 
 def p_compound_statement_3(t):
     'compound_statement : LBRACE declaration_list RBRACE'
-    t[0] = t[2]
+    t[0] = translator.CompoundStatement(t[2])
 
 def p_compound_statement_4(t):
     'compound_statement : LBRACE RBRACE'
-    t[0] = None
+    t[0] = translator.CompoundStatement()
 
 # statement-list:
 
@@ -615,9 +615,13 @@ def p_iteration_statement_1(t):
 
 def p_iteration_statement_2(t):
     'iteration_statement : FOR LPAREN expression_opt SEMI expression_opt SEMI expression_opt RPAREN statement '
-    raise UnhandledSyntaxError
+    t[0] = translator.ForStatement(preLoopPart=t[3], condition=t[5], postLoopBodyPart=t[7], loopBodyPart=t[9])
 
 def p_iteration_statement_3(t):
+    'iteration_statement : FOR LPAREN declaration expression_opt SEMI expression_opt RPAREN statement '
+    t[0] = translator.ForStatement(preLoopPart=t[3], condition=t[4], postLoopBodyPart=t[6], loopBodyPart=t[8])
+
+def p_iteration_statement_4(t):
     'iteration_statement : DO statement WHILE LPAREN expression RPAREN SEMI'
     raise UnhandledSyntaxError
 
@@ -769,19 +773,19 @@ def p_relational_expression_1(t):
 
 def p_relational_expression_2(t):
     'relational_expression : relational_expression LT shift_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_relational_expression_3(t):
     'relational_expression : relational_expression GT shift_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_relational_expression_4(t):
     'relational_expression : relational_expression LE shift_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_relational_expression_5(t):
     'relational_expression : relational_expression GE shift_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # shift-expression
 
@@ -809,7 +813,7 @@ def p_additive_expression_2(t):
 
 def p_additive_expression_3(t):
     'additive_expression : additive_expression MINUS multiplicative_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # multiplicative-expression
 
@@ -819,15 +823,15 @@ def p_multiplicative_expression_1(t):
 
 def p_multiplicative_expression_2(t):
     'multiplicative_expression : multiplicative_expression TIMES cast_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_multiplicative_expression_3(t):
     'multiplicative_expression : multiplicative_expression DIVIDE cast_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 def p_multiplicative_expression_4(t):
     'multiplicative_expression : multiplicative_expression MOD cast_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # cast-expression:
 
@@ -901,11 +905,11 @@ def p_postfix_expression_6(t):
 
 def p_postfix_expression_7(t):
     'postfix_expression : postfix_expression PLUSPLUS'
-    raise UnhandledSyntaxError
+    t[0] = translator.UnaryOperandExpression(t[1], t[2], isPrefix=False)
 
 def p_postfix_expression_8(t):
     'postfix_expression : postfix_expression MINUSMINUS'
-    raise UnhandledSyntaxError
+    t[0] = translator.UnaryOperandExpression(t[1], t[2], isPrefix=False)
 
 # primary-expression:
 def p_primary_expression_1(t):

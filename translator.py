@@ -106,6 +106,21 @@ class BinaryOperandExpression(Expression):
 	def __str__(self):
 		return str(self.left) + self.operator + str(self.right)
 
+class UnaryOperandExpression(Expression):
+	def __init__(self, operand, operator, isPrefix):
+		self.operand = operand
+		self.operator = operator
+		self.isPrefix = isPrefix
+	def __str__(self):
+		s = ""
+		if self.isPrefix:
+			s += self.operator
+			s += str(self.operand)
+		else:
+			s += str(self.operand)
+			s += self.operator
+		return s
+
 class PredefinedRegister(Variable):
 	pass
 
@@ -209,6 +224,37 @@ class IfStatement(Statement):
 			s += "else{ "
 			s += str(self.falsePart)
 			s += " }"
+		return s
+
+class ForStatement(Statement):
+	def __init__(self, preLoopPart=None, condition=None, postLoopBodyPart=None, loopBodyPart=None):
+		self.preLoopPart = preLoopPart
+		self.condition = condition
+		self.postLoopBodyPart = postLoopBodyPart
+		self.loopBodyPart = loopBodyPart
+	def __str__(self):
+		s = "for("
+		if self.preLoopPart != None:
+			s += str(self.preLoopPart)
+		s += ";"
+		if self.condition != None:
+			s += str(self.condition)
+		s += ";"
+		if self.postLoopBodyPart != None:
+			s += str(self.postLoopBodyPart)
+		s += "){ "
+		if self.loopBodyPart != None:
+			s += str(self.loopBodyPart)
+		s += " }"
+		return s
+class CompoundStatement(Statement):
+	def __init__(self, statements=None):
+		self.statements = statements
+	def __str__(self):
+		s = "{ "
+		if self.statements != None:
+			s += str(self.statements)
+		s += " }"
 		return s
 
 predefinedTypeID = (
