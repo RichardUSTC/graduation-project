@@ -12,5 +12,7 @@
         case 3:
             fesetround(FE_TOWARDZERO);
             break;
+        default:
+            break;
     }
 }
