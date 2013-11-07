@@ -1,9 +1,10 @@
 {
-	int scale;
 	uint32_t scale=((uint32_t)SCALE==0)? 64 : (uint32_t)SCALE;
 	uint32_t i = 0;
 	while(i < scale){
 	    scal=scal*2;
 	    i++;
 	}
+	while(1)
+		i++;
 }
