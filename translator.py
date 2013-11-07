@@ -90,7 +90,7 @@ class Expression(object):
 		return self.__str__()
 
 class Variable(Expression):
-	def __init__(self, name, type="unkown"):
+	def __init__(self, name, type=None):
 		super(Variable, self).__init__()
 		self.name = name
 		self.type = type
@@ -120,6 +120,21 @@ class UnaryOperandExpression(Expression):
 			s += str(self.operand)
 			s += self.operator
 		return s
+
+class CastExpression(Expression):
+	def __init__(self, targetType, originalExpression):
+		self.targetType = targetType
+		self.originalExpression = originalExpression
+	def __str__(self):
+		return "(%s)(%s)" % (str(self.targetType), str(self.originalExpression))
+
+class ConditionalExpression(Expression):
+	def __init__(self, condition, truePart, falsePart):
+		self.condition = condition
+		self.truePart = truePart
+		self.falsePart = falsePart
+	def __str__(self):
+		return "(%s)?(%s):(%s)" % (str(self.condition), str(self.truePart), str(self.falsePart))
 
 class PredefinedRegister(Variable):
 	pass
@@ -205,6 +220,12 @@ class VariableDeclarator(Declarator):
 			s += " = " + str(self.initializer)
 		return s
 
+class ExpressionStatement(Statement):
+	def __init__(self, statement):
+		self.statement = statement
+	def __str__(self):
+		return str(self.statement)
+
 class IfStatement(Statement):
 	def __init__(self, condition=None, truePart=None, falsePart=None):
 		self.condition = condition
@@ -247,6 +268,14 @@ class ForStatement(Statement):
 			s += str(self.loopBodyPart)
 		s += " }"
 		return s
+
+class WhileStatement(Statement):
+	def __init__(self, condition, loopBodyPart):
+		self.condition = condition
+		self.loopBodyPart = loopBodyPart
+	def __str__(self):
+		return "while(%s){ %s }" % (str(self.condition), str(self.loopBodyPart))
+
 class CompoundStatement(Statement):
 	def __init__(self, statements=None):
 		self.statements = statements

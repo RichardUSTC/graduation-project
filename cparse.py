@@ -269,7 +269,7 @@ def p_specifier_qualifier_list_1(t):
 
 def p_specifier_qualifier_list_2(t):
     'specifier_qualifier_list : type_specifier'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_specifier_qualifier_list_3(t):
     'specifier_qualifier_list : type_qualifier specifier_qualifier_list'
@@ -469,11 +469,14 @@ def p_initializer_list_2(t):
 
 def p_type_name(t):
     'type_name : specifier_qualifier_list abstract_declarator_opt'
-    raise UnhandledSyntaxError
+    if isinstance(t[1], translator.Type) and t[2] == None:
+        t[0] = t[1]
+    else:
+        raise UnhandledSyntaxError
 
 def p_abstract_declarator_opt_1(t):
     'abstract_declarator_opt : empty'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_abstract_declarator_opt_2(t):
     'abstract_declarator_opt : abstract_declarator'
@@ -519,7 +522,7 @@ def p_direct_abstract_declarator_5(t):
 
 def p_constant_expression_opt_1(t):
     'constant_expression_opt : empty'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_constant_expression_opt_2(t):
     'constant_expression_opt : constant_expression'
@@ -527,7 +530,7 @@ def p_constant_expression_opt_2(t):
 
 def p_parameter_type_list_opt_1(t):
     'parameter_type_list_opt : empty'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_parameter_type_list_opt_2(t):
     'parameter_type_list_opt : parameter_type_list'
@@ -563,7 +566,7 @@ def p_labeled_statement_3(t):
 # expression-statement:
 def p_expression_statement(t):
     'expression_statement : expression_opt SEMI'
-    t[0] = translator.CompoundStatement(t[1])
+    t[0] = translator.ExpressionStatement(t[1])
 
 # compound-statement:
 
@@ -611,7 +614,7 @@ def p_selection_statement_3(t):
 
 def p_iteration_statement_1(t):
     'iteration_statement : WHILE LPAREN expression RPAREN statement'
-    raise UnhandledSyntaxError
+    t[0] = translator.WhileStatement(t[3], t[5])
 
 def p_iteration_statement_2(t):
     'iteration_statement : FOR LPAREN expression_opt SEMI expression_opt SEMI expression_opt RPAREN statement '
@@ -645,7 +648,7 @@ def p_jump_statement_4(t):
 
 def p_expression_opt_1(t):
     'expression_opt : empty'
-    t[0] = None
+    t[0] = t[1]
 
 def p_expression_opt_2(t):
     'expression_opt : expression'
@@ -693,7 +696,7 @@ def p_conditional_expression_1(t):
 
 def p_conditional_expression_2(t):
     'conditional_expression : logical_or_expression CONDOP expression COLON conditional_expression '
-    raise UnhandledSyntaxError
+    t[0] = translator.ConditionalExpression(t[1], t[3], t[5])
 
 # constant-expression
 
@@ -841,7 +844,8 @@ def p_cast_expression_1(t):
 
 def p_cast_expression_2(t):
     'cast_expression : LPAREN type_name RPAREN cast_expression'
-    raise UnhandledSyntaxError
+    assert isinstance(t[2], translator.Type)
+    t[0] = translator.CastExpression(t[2], t[4])
 
 # unary-expression:
 def p_unary_expression_1(t):
@@ -923,7 +927,7 @@ def p_primary_expression_2(t):
 
 def p_primary_expression_3(t):
     'primary_expression : LPAREN expression RPAREN'
-    raise UnhandledSyntaxError
+    t[0] = t[2]
 
 # argument-expression-list:
 def p_argument_expression_list(t):
@@ -950,7 +954,7 @@ def p_constant_4(t):
 
 def p_empty(t):
     'empty : '
-    raise UnhandledSyntaxError
+    t[0] = None
 
 def p_error(t):
     print("Whoa. We're hosed")
