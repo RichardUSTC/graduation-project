@@ -136,6 +136,13 @@ class ConditionalExpression(Expression):
 	def __str__(self):
 		return "(%s)?(%s):(%s)" % (str(self.condition), str(self.truePart), str(self.falsePart))
 
+class FunctionCallExpression(Expression):
+	def __init__(self, function, arguments):
+		self.function = function
+		self.arguments = arguments
+	def __str__(self):
+		return "%s(%s)" %(str(self.function), str(self.arguments))
+
 class PredefinedRegister(Variable):
 	pass
 
@@ -275,6 +282,28 @@ class WhileStatement(Statement):
 		self.loopBodyPart = loopBodyPart
 	def __str__(self):
 		return "while(%s){ %s }" % (str(self.condition), str(self.loopBodyPart))
+
+class CaseStatement(Statement):
+	def __init__(self, case=None, caseBody=None, isDefault=False):
+		self.isDefault = isDefault
+		self.case = case
+		self. caseBody = caseBody
+	def __str__(self):
+		if self.isDefault:
+			return "default: %s" % (str(self.caseBody))
+		else:
+			return "case %s: %s" %(str(self.case), str(self.caseBody))
+
+class BreakStatement(Statement):
+	def __str__(self):
+		return "break"
+
+class SwitchStatement(Statement):
+	def __init__(self, switcher, bodyPart):
+		self.switcher = switcher
+		self.bodyPart = bodyPart
+	def __str__(self):
+		return "switch(%s) { %s }" % (str(self.switcher), str(self.bodyPart))
 
 class CompoundStatement(Statement):
 	def __init__(self, statements=None):

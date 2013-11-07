@@ -557,11 +557,11 @@ def p_labeled_statement_1(t):
 
 def p_labeled_statement_2(t):
     'labeled_statement : CASE constant_expression COLON statement'
-    raise UnhandledSyntaxError
+    t[0] = translator.CaseStatement(case=t[2], caseBody=t[4])
 
 def p_labeled_statement_3(t):
     'labeled_statement : DEFAULT COLON statement'
-    raise UnhandledSyntaxError
+    t[0] = translator.CaseStatement(isDefault=True, caseBody=t[3])
 
 # expression-statement:
 def p_expression_statement(t):
@@ -608,7 +608,7 @@ def p_selection_statement_2(t):
 
 def p_selection_statement_3(t):
     'selection_statement : SWITCH LPAREN expression RPAREN statement '
-    raise UnhandledSyntaxError
+    t[0] = translator.SwitchStatement(t[3], t[5])
 
 # iteration_statement:
 
@@ -640,7 +640,7 @@ def p_jump_statement_2(t):
 
 def p_jump_statement_3(t):
     'jump_statement : BREAK SEMI'
-    raise UnhandledSyntaxError
+    t[0] = translator.BreakStatement()
 
 def p_jump_statement_4(t):
     'jump_statement : RETURN expression_opt SEMI'
@@ -702,7 +702,7 @@ def p_conditional_expression_2(t):
 
 def p_constant_expression(t):
     'constant_expression : conditional_expression'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 # logical-or-expression
 
@@ -893,7 +893,7 @@ def p_postfix_expression_2(t):
 
 def p_postfix_expression_3(t):
     'postfix_expression : postfix_expression LPAREN argument_expression_list RPAREN'
-    raise UnhandledSyntaxError
+    t[0] = translator.FunctionCallExpression(t[1], t[3])
 
 def p_postfix_expression_4(t):
     'postfix_expression : postfix_expression LPAREN RPAREN'
@@ -930,10 +930,13 @@ def p_primary_expression_3(t):
     t[0] = t[2]
 
 # argument-expression-list:
-def p_argument_expression_list(t):
-    '''argument_expression_list :  assignment_expression
-                              |  argument_expression_list COMMA assignment_expression'''
-    raise UnhandledSyntaxError
+def p_argument_expression_list_1(t):
+    'argument_expression_list :  assignment_expression'
+    t[0] = [ t[1] ]
+
+def p_argument_expression_list_2(t):
+    'argument_expression_list :  argument_expression_list COMMA assignment_expression'
+    t[0] = t[1] + [ t[3] ]
 
 # constant:
 def p_constant_1(t): 
