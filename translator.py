@@ -83,6 +83,26 @@ class PointerType(Type):
 			s += "*"
 		return s
 
+class StructOrUnionType(Type):
+	structOrUnion = "unknown"
+	def __init__(self, name=None, definition=None):
+		self.name = name
+		self.definition = definition
+	def __str__(self):
+		s = self.structOrUnion + " "
+		if self.name != None:
+			s += self.name
+		if self.definition != None:
+			s += "{ "
+			s += str(self.definition)
+			s += " }"
+		return s
+class StructType(StructOrUnionType):
+	structOrUnion = "struct"
+
+class UnionType(StructOrUnionType):
+	structOrUnion = "union"
+
 class Expression(object):
 	def __init__(self):
 		self.value = None
@@ -213,10 +233,10 @@ class Statement(object):
 class Declarator(Statement): pass
 
 class VariableDeclarator(Declarator):
-	def __init__(self):
-		self.type = None
-		self.variable = None
-		self.initializer = None
+	def __init__(self, type=None, variable=None, initializer=None):
+		self.type = type
+		self.variable = variable
+		self.initializer = initializer
 	def __str__(self):
 		s = ""
 		if self.type != None:
@@ -226,6 +246,11 @@ class VariableDeclarator(Declarator):
 		if self.initializer != None:
 			s += " = " + str(self.initializer)
 		return s
+class TypeDeclarator(Declarator):
+	def __init__(self, type=None):
+		self.type = type
+	def __str__(self):
+		return str(self.type)
 
 class ExpressionStatement(Statement):
 	def __init__(self, statement):

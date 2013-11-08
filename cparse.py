@@ -78,13 +78,16 @@ def p_declaration_1(t):
 
 def p_declaration_2(t):
     'declaration : declaration_specifiers SEMI'
-    raise UnhandledSyntaxError
+    if isinstance(t[1], translator.Type):
+        t[0] = translator.TypeDeclarator(t[1])
+    else:
+        raise UnhandledSyntaxError
 
 # declaration-list:
 
 def p_declaration_list_1(t):
     'declaration_list : declaration'
-    t[0] = t[1]
+    t[0] = [ t[1] ]
 
 def p_declaration_list_2(t):
     'declaration_list : declaration_list declaration '
@@ -204,32 +207,37 @@ def p_type_qualifier(t):
 
 def p_struct_or_union_specifier_1(t):
     'struct_or_union_specifier : struct_or_union ID LBRACE struct_declaration_list RBRACE'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
+    t[0].name = t[2]
+    t[0].definition = t[4]
 
 def p_struct_or_union_specifier_2(t):
     'struct_or_union_specifier : struct_or_union LBRACE struct_declaration_list RBRACE'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
+    t[0].definition = t[3]
 
 def p_struct_or_union_specifier_3(t):
     'struct_or_union_specifier : struct_or_union ID'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
+    t[0].name = t[2]
 
 # struct-or-union:
-def p_struct_or_union(t):
-    '''struct_or_union : STRUCT
-                       | UNION
-                       '''
-    raise UnhandledSyntaxError
+def p_struct_or_union_1(t):
+    'struct_or_union : STRUCT'
+    t[0] = translator.StructType()
 
+def p_struct_or_union_2(t):
+    'struct_or_union : UNION'
+    t[0] = translator.UnionType()
 # struct-declaration-list:
 
 def p_struct_declaration_list_1(t):
     'struct_declaration_list : struct_declaration'
-    raise UnhandledSyntaxError
+    t[0] = [ t[1] ]
 
 def p_struct_declaration_list_2(t):
     'struct_declaration_list : struct_declaration_list struct_declaration'
-    raise UnhandledSyntaxError
+    t[0] = t[1] + [ t[2] ]
 
 # init-declarator-list:
 
@@ -259,7 +267,20 @@ def p_init_declarator_2(t):
 
 def p_struct_declaration(t):
     'struct_declaration : specifier_qualifier_list struct_declarator_list SEMI'
-    raise UnhandledSyntaxError
+    if isinstance(t[1], translator.Type):
+        t[0] = t[2]
+        for item in t[0]:
+            if item.type == None:
+                item.type = t[1]
+            elif isinstance(item.type, translator.PointerType):
+                if item.type.baseType == None:
+                    item.type.baseType = t[1]
+                else:
+                    raise UnhandledSyntaxError
+            else:
+                raise UnhandledSyntaxError
+    else:
+        raise UnhandledSyntaxError
 
 # specifier-qualifier-list:
 
@@ -283,17 +304,17 @@ def p_specifier_qualifier_list_4(t):
 
 def p_struct_declarator_list_1(t):
     'struct_declarator_list : struct_declarator'
-    raise UnhandledSyntaxError
+    t[0] = [ t[1] ]
 
 def p_struct_declarator_list_2(t):
     'struct_declarator_list : struct_declarator_list COMMA struct_declarator'
-    raise UnhandledSyntaxError
+    t[0] = t[1] + [ t[3] ]
 
 # struct-declarator:
 
 def p_struct_declarator_1(t):
     'struct_declarator : declarator'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_struct_declarator_2(t):
     'struct_declarator : declarator COLON constant_expression'
