@@ -1,0 +1,52 @@
+{
+//////////////////  addReg32  /////////////////////////
+uint32_t tempRm = 0;
+/*
+Value *tempRm = builder->CreateAllocInst();
+setAllocInst(tempRm, 0);
+*/
+uint32_t result;
+/*
+Value *result = builder->CreateAllocInst();
+*/
+
+//LSL(logical shift left)
+if(SHIFT == 0){
+    tempRm = Rm << IMM6;
+    /*
+    Value *t0 = builder->CreateShl(Rm, getConstInt(IMM6));
+    setAllocInst(tempRm, t0);
+    */
+}
+
+//LSR(logical shift right)
+else if(SHIFT == 1){
+    tempRm = Rm >> IMM6;
+    /*
+    Value *t1 = builder->CreateShr(Rm, getConstInt(IMM6));
+    setAllocInst(tempRm, t1);
+    */
+}
+
+//ASR(arithmatic shift right)
+else if(SHIFT == 2){
+    tempRm = (Rm>>IMM6)| -((Rm & (1<<31))>>IMM6);
+    /*
+    Value *t2 = builder->CreateShr(Rm, getConstInt(IMM6));
+    Value *t3 = builder->CreateAnd(Rm, getConstInt(1<<31));
+    Value *t4 = builder->CreateShl(t3, getConstInt(IMM6));
+    Value *t5 = builder->CreateNeg(t4);
+    Value *t6 = builder->CreateOr(t2, t5);
+    setAllocInst(tempRm, t6);
+    */
+}
+
+Rd = result = Rn + tempRm;
+/*
+Value * Rn = getIntReg(RN);
+Value * t7 = getAllocInst(tempRm);
+Value * t8 = builder->CreateAdd(Rn, t7);
+setAllocInst(result, t8);
+setIntReg(RD, result);
+*/
+}
