@@ -1,0 +1,14 @@
+{
+    struct s{
+        int a;
+        int b;
+    };
+    struct s ts;
+    union u{
+        int a;
+        int b;
+    }tu;
+    struct{
+    	int foo;
+    }x;
+}
