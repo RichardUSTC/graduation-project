@@ -380,7 +380,7 @@ def p_direct_declarator_1(t):
 
 def p_direct_declarator_2(t):
     'direct_declarator : LPAREN declarator RPAREN'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_direct_declarator_3(t):
     'direct_declarator : direct_declarator LBRACKET constant_expression_opt RBRACKET'
@@ -733,7 +733,7 @@ def p_logical_or_expression_1(t):
 
 def p_logical_or_expression_2(t):
     'logical_or_expression : logical_or_expression LOR logical_and_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # logical-and-expression
 
@@ -743,7 +743,7 @@ def p_logical_and_expression_1(t):
 
 def p_logical_and_expression_2(t):
     'logical_and_expression : logical_and_expression LAND inclusive_or_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # inclusive-or-expression:
 
@@ -753,7 +753,7 @@ def p_inclusive_or_expression_1(t):
 
 def p_inclusive_or_expression_2(t):
     'inclusive_or_expression : inclusive_or_expression OR exclusive_or_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # exclusive-or-expression:
 
@@ -763,7 +763,7 @@ def p_exclusive_or_expression_1(t):
 
 def p_exclusive_or_expression_2(t):
     'exclusive_or_expression :  exclusive_or_expression XOR and_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 # AND-expression
 
@@ -773,7 +773,7 @@ def p_and_expression_1(t):
 
 def p_and_expression_2(t):
     'and_expression : and_expression AND equality_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 
 # equality-expression:
@@ -787,7 +787,7 @@ def p_equality_expression_2(t):
 
 def p_equality_expression_3(t):
     'equality_expression : equality_expression NE relational_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.BinaryOperandExpression(t[1], t[2], t[3])
 
 
 # relational-expression:
@@ -865,8 +865,10 @@ def p_cast_expression_1(t):
 
 def p_cast_expression_2(t):
     'cast_expression : LPAREN type_name RPAREN cast_expression'
-    assert isinstance(t[2], translator.Type)
-    t[0] = translator.CastExpression(t[2], t[4])
+    if isinstance(t[2], translator.Type):
+        t[0] = translator.CastExpression(t[2], t[4])
+    else:
+        raise UnhandledSyntaxError
 
 # unary-expression:
 def p_unary_expression_1(t):
@@ -875,15 +877,15 @@ def p_unary_expression_1(t):
 
 def p_unary_expression_2(t):
     'unary_expression : PLUSPLUS unary_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.UnaryOperandExpression(operand=t[2], operator=t[1], isPrefix=True)
 
 def p_unary_expression_3(t):
     'unary_expression : MINUSMINUS unary_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.UnaryOperandExpression(operand=t[2], operator=t[1], isPrefix=True)
 
 def p_unary_expression_4(t):
     'unary_expression : unary_operator cast_expression'
-    raise UnhandledSyntaxError
+    t[0] = translator.UnaryOperandExpression(operand=t[2], operator=t[1], isPrefix=True)
 
 def p_unary_expression_5(t):
     'unary_expression : SIZEOF unary_expression'
@@ -901,7 +903,7 @@ def p_unary_operator(t):
                     | MINUS
                     | NOT
                     | LNOT '''
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 # postfix-expression:
 def p_postfix_expression_1(t):
@@ -918,7 +920,7 @@ def p_postfix_expression_3(t):
 
 def p_postfix_expression_4(t):
     'postfix_expression : postfix_expression LPAREN RPAREN'
-    raise UnhandledSyntaxError
+    t[0] = translator.FunctionCallExpression(t[1], None)
 
 def p_postfix_expression_5(t):
     'postfix_expression : postfix_expression PERIOD ID'
