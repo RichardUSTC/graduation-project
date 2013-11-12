@@ -1,0 +1,46 @@
+{
+
+                                                                        union v{
+                                                                            double f;
+                                                                            uint64_t u;
+                                                                        };
+                                                                        v vn, vd;
+                                                                        vn.f = Vn_df;
+                                                                        if(isNan(&vn.u, 64))
+                                                                        {
+                                                                            if(isSnan(&vn.u, 64))
+                                                                            {
+                                                                                vn.u = vn.u | 0x0008000000000000;
+                                                                                vd.u = vn.u;
+                                                                                //todo:raise invalid op exception
+                                                                            }
+                                                                            //else if(/*todo:defaultNan requested*/)
+                                                                                vd.u = ARM64_QNAN;
+                                                                        }
+                                                                        else if(vn.u == 0x0 || (isInfinity(&vn.u,64) && vn.u<63:63> == 0))
+                                                                            vd.f = vn.f;
+                                                                        else if(vn.u<63:63> == 1)
+                                                                            vd.u = ARM64_QNAN;//todo:raise invalide op exception
+                                                                        else
+                                                                        {
+                                                                            switch(RMODE(FPCR))
+                                                                            {
+                                                                                case 0x0:
+                                                                                    fesetround(FE_TONEAREST);
+                                                                                    break;
+                                                                                case 0x1:
+                                                                                    fesetround(FE_UPWARD);
+                                                                                    break;
+                                                                                case 0x2:
+                                                                                    fesetround(FE_DOWNWARD);
+                                                                                    break;
+                                                                                case 0x3: 
+                                                                                    fesetround(FE_TOWARDZERO);
+                                                                                    break;
+                                                                            }
+                                                                            vd.f = sqrt(vn.f);
+                                                                            fesetround(FE_TONEAREST);
+                                                                        }
+                                                                        Vd_df = vd.f;
+                                                                    
+}

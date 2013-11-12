@@ -1,0 +1,9 @@
+{
+
+
+                                                        if(testcond(CondCodesN, CondCodesZ, CondCodesC, CondCodesV, COND))
+															Rd_ud = Rn_ud;
+														else
+															Rd_ud = Rm_ud;
+													
+}

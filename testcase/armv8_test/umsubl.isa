@@ -1,0 +1,3 @@
+{
+Rd_ud = Ra_ud - ((uint64_t)Rn * (uint64_t)Rm );
+}

@@ -1,0 +1,27 @@
+{
+
+                                                    double tempDd = 0;
+                                                    double scal=1.0;
+                                                    uint32_t scale=((uint32_t)SCALE==0)? 64 : (uint32_t)SCALE;
+                                                    
+                                                    for(uint32_t i = 0; i < scale; i++)
+                                                        scal = scal * 2;
+                                                    switch(RMODE(FPCR)){
+                                                        case 0x0:
+                                                            fesetround(FE_TONEAREST);
+                                                            break;
+                                                        case 0x1:
+                                                            fesetround(FE_UPWARD);
+                                                            break;
+                                                        case 0x2:
+                                                            fesetround(FE_DOWNWARD);
+                                                            break;
+                                                        case 0x3:
+                                                            fesetround(FE_TOWARDZERO);
+                                                            break;
+                                                    }
+                                                    tempDd = Rn_sw / scal;
+                                                    fesetround(FE_TONEAREST);
+                                                    Vd_df = tempDd;
+                                                
+}

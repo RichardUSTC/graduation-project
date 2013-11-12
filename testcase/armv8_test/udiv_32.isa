@@ -1,0 +1,10 @@
+{
+
+                                                    if (Rm_uw == 0){
+                                                        Rd_uw = 0;
+                                                    }
+                                                    else{
+                                                        Rd_uw = Rn_uw / Rm_uw;
+                                                    }
+                                                
+}

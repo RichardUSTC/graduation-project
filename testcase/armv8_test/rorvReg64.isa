@@ -1,0 +1,6 @@
+{
+
+											//ROR (Rotate right)
+                                			Rd_ud = (Rn_ud >> (Rm_ud & 0x1f))|(Rn_ud << (64-(Rm_ud & 0x3f)));
+										
+}

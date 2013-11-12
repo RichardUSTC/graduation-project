@@ -1,0 +1,7 @@
+{
+
+
+											uint64_t val = Rn_ud;
+                                			Rd_ud = swap_byte(val);
+										
+}

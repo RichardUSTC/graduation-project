@@ -1,0 +1,13 @@
+{
+
+                                                if(Rm_sw == 0){
+                                                    Rd_sw = 0;
+                                                }
+                                                else if(Rn_sw == 0x80000000 && Rm_sw == -1){
+                                                    Rd_sw = -2147483648;
+                                                }
+                                                else{
+                                                    Rd_sw = Rn_sw / Rm_sw;
+                                                }
+                                            
+}

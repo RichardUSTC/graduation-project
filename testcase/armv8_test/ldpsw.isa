@@ -1,0 +1,4 @@
+{
+Rt_ud = sext<32>(bits(Mem_ud, 31, 0));
+                              Rt2_ud =sext<32>(bits(Mem_ud, 63, 32));
+}

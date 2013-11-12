@@ -1,0 +1,7 @@
+{
+
+                                            uint32_t temp;
+                                            temp = (uint32_t)CLS(32,_N,imm12_hi,imm12_lo);
+                                            Sp = Rn ^ temp;
+                                        
+}

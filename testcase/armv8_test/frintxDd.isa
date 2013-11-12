@@ -1,0 +1,18 @@
+{
+
+                                                                    switch(RMODE(FPCR)){
+                                                                        case 0x0:
+                                                                            Vd_df = nearbyint(Vn_df);
+                                                                            break;
+                                                                        case 0x1:
+                                                                            Vd_df = ceil(Vn_df);
+                                                                            break;
+                                                                        case 0x2:
+                                                                            Vd_df = floor(Vn_df);
+                                                                            break;
+                                                                        case 0x3:
+                                                                            Vd_df = trunc(Vn_df);
+                                                                            break;
+                                                                    }
+                                                                
+}

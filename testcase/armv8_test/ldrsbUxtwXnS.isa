@@ -1,0 +1,3 @@
+{
+Rt_ud = sext<8>((uint64_t)Mem_ub);
+}

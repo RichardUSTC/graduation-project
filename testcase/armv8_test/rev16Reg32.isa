@@ -1,0 +1,11 @@
+{
+
+
+														uint32_t val = Rn;
+
+														Rd = (bits(val, 15, 8) << 0) |
+															(bits(val, 7, 0) << 8) |
+															(bits(val, 31, 24) << 16) |
+															(bits(val, 23, 16) << 24);
+													
+}

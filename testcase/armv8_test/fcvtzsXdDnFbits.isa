@@ -1,0 +1,31 @@
+{
+
+                                                        union v {
+                                                            double f;
+                                                            uint64_t u;
+                                                        } t;
+                                                        t.f = Vn_df;
+
+                                                        double tempVn = t.f;
+                                                        uint32_t exponent = t.u<62:52> - 1023;
+                                                        uint32_t scale=((uint32_t)SCALE==0)? 64 : (uint32_t)SCALE;
+                                                        //todo
+                                                       // if(tempVn is NaN || tempVn is Infinity)
+                                                            //todo:raise the invalid operation exception (FPSR.IOC)
+                                                       // else if(tempVn is a denormal input && flush_to_zero mode)
+                                                            //todo:tempVn = 0 && raise the input denormal exception (FPSR.IDC)
+                                                        //if(SCALE + exponent == 63) <<<<  this is wrong!
+                                                        if(SCALE + exponent >= 63)
+                                                            Rd_ud = 0x7FFFFFFFFFFFFFFF;
+                                                        else
+                                                        {
+                                                            uint64_t scal=1;
+                                                            for(uint32_t i = 0; i < scale; i++)
+                                                                scal = scal * 2;
+                                                            fesetround(FE_TOWARDZERO);
+                                                            tempVn=tempVn*scal;
+                                                            Rd_ud = (uint64_t)tempVn;
+                                                        }
+                                                         fesetround(FE_TONEAREST);
+                                                    
+}

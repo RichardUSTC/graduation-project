@@ -1,0 +1,32 @@
+{
+
+                                                    double tempSd=0;
+                                                    double scal=1.0;
+                                                    uint32_t scale=((uint32_t)SCALE==0)?64:(uint32_t)SCALE;
+                                                    for(uint32_t i = 0; i < scale; i++)
+                                                        scal=scal*2;
+                                                    switch(RMODE(FPCR)){
+                                                        case 0x0:
+                                                            fesetround(FE_TONEAREST);
+                                                            tempSd = ((double)Rn_ud) / scal;
+                                                            Vd_df = f2u(tempSd);
+                                                            break;
+                                                        case 0x1:
+                                                            fesetround(FE_UPWARD);
+                                                            tempSd = ((double)Rn_ud) / scal;
+                                                            Vd_df = f2u(tempSd);
+                                                            break;
+                                                        case 0x2:
+                                                            fesetround(FE_DOWNWARD);
+                                                            tempSd = ((double)Rn_ud) / scal;
+                                                            Vd_df = f2u(tempSd);
+                                                            break;
+                                                        case 0x3:
+                                                            fesetround(FE_TOWARDZERO);
+                                                            tempSd = ((double)Rn_ud)/ scal;
+                                                            Vd_df = f2u(tempSd);
+                                                            break;
+                                                    }
+                                                    fesetround(FE_TONEAREST);
+                                                
+}

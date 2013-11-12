@@ -1,0 +1,4 @@
+{
+Rt_ud = Mem_uq.a;
+                                      Rt2_ud = Mem_uq.b;
+}

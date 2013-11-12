@@ -1,0 +1,72 @@
+{
+
+                                                            union v{
+                                                                float f;
+                                                                uint32_t u;
+                                                            };
+                                                            v vn, vm, vd;
+                                                            vn.u = Vn_uw;
+                                                            vm.u = Vm_uw;
+                                                            vd.f = 0.0;
+                                                            
+                                                            if(isSnan(&vn.u, 32))
+                                                            {
+                                                                vn.u = vn.u | 0x00400000;
+                                                                //todo:raise FpExc_InvalidOp
+                                                                vd.f = vn.f;
+                                                                //todo: if(DefaultNan requested)
+                                                                //  vd.f = ARM32_QNAN;
+                                                                Vd_uw = vd.u;
+                                                            }
+                                                            else if(isSnan(&vm.u, 32))
+                                                            {
+                                                                vm.u = vm.u | 0x00400000;
+                                                                //todo:raise FpExc_InvalidOp
+                                                                vd.f = vm.f;
+                                                                //todo: if(DefaultNan requested)
+                                                                //  vd.f = ARM32_QNAN;
+                                                                Vd_uw = vd.u;
+                                                            }
+                                                            else if(isQnan(&vn.u, 32))
+                                                            {
+                                                                vd.f = vn.f;
+                                                                //todo: if(DefaultNan requested)
+                                                                //  vd.f = ARM32_QNAN;
+                                                                Vd_uw = vd.u;
+                                                            }
+                                                            else if(isQnan(&vm.u, 32))
+                                                            {
+                                                                vd.f = vm.f;
+                                                                //todo: if(DefaultNan requested)
+                                                                //  vd.f = ARM32_QNAN;
+                                                                Vd_uw = vd.u;
+                                                            }
+                                                            else{
+                                                                switch(RMODE(FPCR)){
+                                                                   case 0x0:
+                                                                       fesetround(FE_TONEAREST);
+                                                                       break;
+                                                                   case 0x1:
+                                                                       fesetround(FE_UPWARD);
+                                                                       break;
+                                                                   case 0x2:
+                                                                       fesetround(FE_DOWNWARD);
+                                                                       break;
+                                                                   case 0x3:
+                                                                       fesetround(FE_TOWARDZERO);
+                                                                       break;
+                                                                }
+                                                                vd.f = (vn.f < vm.f)? vn.f : vm.f;
+                                                                Vd_uw = vd.u;
+                                                                fesetround(FE_TONEAREST);
+                                                                if(vn.f == 0 && vm.f == 0)
+                                                                {
+                                                                    if((vn.u<31:31> | vn.u<31:31>) == 0)
+                                                                        vd.u = 0x0;
+                                                                    else
+                                                                        vd.u = vn.u;
+                                                                    Vd_uw = vd.u;
+                                                                }
+                                                            }
+                                                        
+}

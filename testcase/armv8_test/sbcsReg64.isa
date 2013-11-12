@@ -1,0 +1,15 @@
+{
+
+
+															uint64_t result;
+															Rd_ud = result = Rn_ud - Rm_ud - ((uint64_t)1) + CondCodesC;
+                                                            uint64_t temp = ~Rm_ud + CondCodesC;
+
+															//set condition flags here
+															CondCodesC = (findCarry(64, result, Rn_ud, temp)) & 0x1;
+															CondCodesZ = (findZero(64, result)) & 0x1;
+															CondCodesN = (findNegative(64, result)) & 0x1;
+															CondCodesV = (findOverflow(64, result, Rn_ud, temp)) & 0x1;
+
+														
+}

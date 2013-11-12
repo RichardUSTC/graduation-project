@@ -1,0 +1,20 @@
+{
+
+                                                                                //todo
+                                                                                // if(Vn_uw is NaN || Vn_uw is Infinity)
+                                                                                //todo:raise the invalid operation exception (FPSR.IOC)
+                                                                                // else if(Vn_uw is a denormal input && flush_to_zero mode)
+                                                                                //todo:Vn_uw = 0 && raise the input denormal exception (FPSR.IDC)
+                                                                                float tmp;
+                                                                                tmp = nearbyintf(u2f(Vn_uw));
+                                                                                if(tmp >= 4294967296.0){
+                                                                                    Rd_uw = 0xffffffff;
+                                                                                }
+                                                                                else if(tmp < 0.0){
+                                                                                    Rd_uw = 0x0;
+                                                                                }
+                                                                                else{
+                                                                                    Rd_uw = tmp;
+                                                                                }
+                                                                            
+}

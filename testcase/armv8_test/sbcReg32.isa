@@ -1,0 +1,8 @@
+{
+
+
+															uint32_t result;
+															Rd = result = Rn - Rm - 1 + CondCodesC;
+
+														
+}

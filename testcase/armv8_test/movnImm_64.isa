@@ -1,0 +1,7 @@
+{
+
+                                        uint64_t temp = IMM20_5;
+                                        temp = temp << (16*IMM22_21);
+                                        Rd_ud = ~temp;
+                                    
+}

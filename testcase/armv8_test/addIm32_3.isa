@@ -1,0 +1,8 @@
+{
+
+                                            if(BIT22)
+                                                Sp = Rn + ((uint32_t)imm12 << 12);
+                                            else
+                                                Sp = Rn + imm12;
+                                        
+}

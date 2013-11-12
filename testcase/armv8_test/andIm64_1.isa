@@ -1,0 +1,7 @@
+{
+
+                                            uint64_t temp;
+                                            temp = CLS(64,_N,imm12_hi,imm12_lo);
+                                            Sp_ud = Rn_ud & temp;
+                                        
+}

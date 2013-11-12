@@ -1,0 +1,8 @@
+{
+
+                                            if(BIT22)
+                                                Rd_ud = Sp_ud + ((uint64_t)imm12 << 12);
+                                            else
+                                                Rd_ud = Sp_ud + imm12;
+                                        
+}

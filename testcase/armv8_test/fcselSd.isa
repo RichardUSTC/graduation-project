@@ -1,0 +1,10 @@
+{
+
+                                                if(testcond(CondCodesN, CondCodesZ, CondCodesC, CondCodesV, COND)) {
+                                                    Vd_uw = Vn_uw;
+                                                }
+                                                else{
+                                                    Vd_uw = Vm_uw;
+                                                }
+                                            
+}

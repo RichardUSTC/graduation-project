@@ -1,0 +1,5 @@
+{
+
+                                                                        Vd_uw = Vn_uw<31:31>? (Vn_uw & 0x7FFFFFFF) : (Vn_uw | 0x80000000);
+                                                                    
+}

@@ -1,0 +1,7 @@
+{
+
+
+															//LSL(logical shift left)
+                                							Rd = Rn << (Rm & 0x1f);
+														
+}

@@ -1,0 +1,5 @@
+{
+
+                                    Rd_sd = Ra_sd + ( sext<32>(Rn) * sext<32>(Rm) );
+                                
+}

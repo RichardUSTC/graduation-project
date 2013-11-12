@@ -1,0 +1,12 @@
+{
+
+
+													uint32_t tempRm = 0;
+													uint32_t result;
+
+													//ASR(arithmatic shift right)
+													tempRm = Rm & 0x1f;
+													result = (Rn >> tempRm)| -((Rn & (1<<31))>>tempRm);
+													Rd = result ;	
+												
+}

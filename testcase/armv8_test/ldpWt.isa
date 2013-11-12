@@ -1,0 +1,4 @@
+{
+Rt = bits(Mem_ud, 31, 0);
+                                      Rt2 = bits(Mem_ud, 63, 32);
+}

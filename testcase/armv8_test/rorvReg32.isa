@@ -1,0 +1,6 @@
+{
+
+											//ROR (Rotate right)
+                                			Rd = (Rn >> (Rm & 0x1f))|(Rn << (32-(Rm & 0x1f)));
+										
+}

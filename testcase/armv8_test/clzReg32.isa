@@ -1,0 +1,20 @@
+{
+
+															
+														uint32_t cnt = 0;
+                                                        if(Rn<31:31> == 1)
+                                                            cnt = 0;
+                                                        else{
+														    for (uint32_t idx = 31; idx >= 0; idx--){
+															    if(Rn<idx:idx> == 0)
+																{
+                                                                    cnt = 32 - idx;
+                                                                    if(cnt==32) break;
+                                                                }
+															    else
+																    break;
+														    }
+                                                        }
+														Rd = cnt;
+													
+}

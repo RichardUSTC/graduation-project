@@ -1,0 +1,48 @@
+{
+
+
+                                                uint64_t result;
+                                                uint64_t tempRm = 0;
+
+                                                switch(EXTEND){
+                                                    case 0 :        //UXTB
+                                                        //add xd, xn, xm/wm, UXTB #EXLSL
+                                                        tempRm = (Rm_ud & 0x00000000000000FF) << EXLSL;
+                                                        break;
+                                                    case 1 :        //UXTH
+                                                        //add xd, xn, xm/wm, UXTH #EXLSL
+                                                        tempRm = (Rm_ud & 0x000000000000FFFF) << EXLSL;
+                                                        break;
+                                                    case 2 :        //UXTW
+                                                        //add xd, xn, xm/wm, UXTW #EXLSL
+                                                        tempRm = (Rm_ud & 0x00000000FFFFFFFF) << EXLSL;
+                                                        break;
+                                                    case 3 :        //UXTX
+                                                        //add xd, xn, xm, UXTX #EXLSL
+                                                        tempRm = Rm_ud << EXLSL;
+                                                        break;
+                                                    case 4 :        //SXTB
+                                                        //add xd, xn, xm/wm, SXTB #EXLSL
+                                                        tempRm = sext<8>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 5 :        //SXTH
+                                                        //add xd, xn, xm/wm, SXTH #EXLSL
+                                                        tempRm = sext<16>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 6 :        //SXTW
+                                                        //add xd, xn, xm/wm, SXTW #EXLSL
+                                                        tempRm = sext<32>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 7 :        //SXTX
+                                                        //add xd, xn, xm, SXTX #EXLSL
+                                                        tempRm = Rm_ud << EXLSL;
+                                                        break;
+                                                }
+
+                                                Rdsp_ud = result = Rnsp_ud + tempRm;
+
+                                            
+}

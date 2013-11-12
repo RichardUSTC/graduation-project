@@ -1,0 +1,56 @@
+{
+
+
+                                                uint64_t result;
+                                                uint64_t tempRm = 0;
+
+                                                switch(EXTEND){
+                                                    case 0 :        //UXTB
+                                                        //subs xd, xn, xm/wm, UXTB #EXLSL
+                                                        tempRm = (Rm_ud & 0x00000000000000FF) << EXLSL;
+                                                        break;
+
+                                                    case 1 :        //UXTH
+                                                        //subs xd, xn, xm/wm, UXTH #EXLSL
+                                                        tempRm = (Rm_ud & 0x000000000000FFFF) << EXLSL;
+                                                        break;
+
+                                                    case 2 :        //UXTW
+                                                        //subs xd, xn, xm/wm, UXTW #EXLSL
+                                                        tempRm = (Rm_ud & 0x00000000FFFFFFFF) << EXLSL;
+                                                        break;
+                                                    case 3 :        //UXTX
+                                                        //subs xd, xn, xm, UXTX #EXLSL
+                                                        tempRm = Rm_ud << EXLSL;
+                                                        break;
+                                                    case 4 :        //SXTB
+                                                        //subs xd, xn, xm/wm, SXTB #EXLSL
+                                                         tempRm = sext<8>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 5 :        //SXTH
+                                                        //subs xd, xn, xm/wm, SXTH #EXLSL
+                                                         tempRm = sext<16>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 6 :        //SXTW
+                                                        //subs xd, xn, xm/wm, SXTW #EXLSL
+                                                         tempRm = sext<32>(Rm_ud);
+                                                        tempRm = tempRm << EXLSL;
+                                                        break;
+                                                    case 7 :        //SXTX
+                                                        //subs xd, xn, xm, SXTX #EXLSL
+                                                        tempRm = Rm_ud << EXLSL;
+                                                        break;
+                                                }
+
+                                                Rd_ud = result = Rnsp_ud - tempRm;
+
+                                                //set condition flags here
+                                                CondCodesC = (findCarry(64, result, Rnsp_ud, ~tempRm)) & 0x1;
+                                                CondCodesZ = (findZero(64, result)) & 0x1;
+                                                CondCodesN = (findNegative(64, result)) & 0x1;
+                                                CondCodesV = (findOverflow(64, result, Rnsp_ud, ~tempRm)) & 0x1;
+
+                                            
+}

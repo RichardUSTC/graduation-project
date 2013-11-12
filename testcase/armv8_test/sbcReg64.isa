@@ -1,0 +1,8 @@
+{
+
+
+															uint64_t result;
+															Rd_ud = result = Rn_ud - Rm_ud - ((uint64_t)1) + CondCodesC;
+
+														
+}

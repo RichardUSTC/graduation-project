@@ -1,0 +1,37 @@
+{
+
+                                                                //if(isSnan(Vn_uw) || isSnan(Vm_uw))
+                                                                // TODO:Invalid Operation exception
+                                                                if(isNan(&Vn_uw, 32) || isNan(&Vm_uw, 32))
+                                                                {
+                                                                    CondCodesN = 0;
+                                                                    CondCodesZ = 0;
+                                                                    CondCodesC = 1;
+                                                                    CondCodesV = 1;
+                                                                }
+                                                                else
+                                                                {
+                                                                    if(Vn_uw == Vm_uw)
+                                                                    {
+                                                                        CondCodesN = 0;
+                                                                        CondCodesZ = 1;
+                                                                        CondCodesC = 1;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                    if(u2f(Vn_uw) < u2f(Vm_uw))
+                                                                    {
+                                                                        CondCodesN = 1;
+                                                                        CondCodesZ = 0;
+                                                                        CondCodesC = 0;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                    if(u2f(Vn_uw) > u2f(Vm_uw))
+                                                                    {
+                                                                        CondCodesN = 0;
+                                                                        CondCodesZ = 0;
+                                                                        CondCodesC = 1;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                }
+                                                            
+}

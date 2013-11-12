@@ -1,0 +1,37 @@
+{
+
+                                                                //if(isSnan(Vn_df));
+                                                                // TODO:Invalid Operation exception
+                                                                if(isNan(&Vn_df, 64))
+                                                                {
+                                                                    CondCodesN = 0;
+                                                                    CondCodesZ = 0;
+                                                                    CondCodesC = 1;
+                                                                    CondCodesV = 1;
+                                                                }
+                                                                else
+                                                                {
+                                                                    if(Vn_df == 0.0)
+                                                                    {
+                                                                        CondCodesN = 0;
+                                                                        CondCodesZ = 1;
+                                                                        CondCodesC = 1;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                    if(Vn_df < 0.0)
+                                                                    {
+                                                                        CondCodesN = 1;
+                                                                        CondCodesZ = 0;
+                                                                        CondCodesC = 0;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                    if(Vn_df > 0.0)
+                                                                    {
+                                                                        CondCodesN = 0;
+                                                                        CondCodesZ = 0;
+                                                                        CondCodesC = 1;
+                                                                        CondCodesV = 0;
+                                                                    }
+                                                                }
+                                                            
+}

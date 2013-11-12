@@ -1,0 +1,25 @@
+{
+
+                                                    uint64_t tempRm = 0;
+                                                    uint64_t result;
+
+                                                    //LSL(logical shift left)
+                                                    if(SHIFT == 0){
+                                                        tempRm = Rm_ud;
+                                                        tempRm = Rm_ud << IMM6;
+                                                    }
+
+                                                    //LSR(logical shift right)
+                                                    else if (SHIFT == 1){
+                                                        tempRm = Rm_ud >> IMM6;
+                                                    }
+
+                                                    //ASR(arithmatic shift right)
+                                                    else if (SHIFT == 2){
+                                                        tempRm = (Rm_ud >> IMM6)| (-((Rm_ud & ((0x1UL) << 63)) >> IMM6));
+                                                    }
+
+                                                    Rd_ud = result = Rn_ud + tempRm;
+
+										
+}

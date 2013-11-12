@@ -1,0 +1,26 @@
+{
+
+										uint64_t tempRm = 0;
+										uint64_t result;
+
+										if(SHIFT == 0){   //LSL(logical shift left)
+											tempRm = Rm_ud << IMM6;
+										}
+
+										else if(SHIFT == 1){      //LSR(logical shift right)
+												tempRm = Rm_ud >> IMM6;
+										}
+
+										else if(SHIFT == 2){      //ASR(arithmatic shift right)
+												tempRm = (Rm_ud >>IMM6)| -((Rm_ud & (((uint64_t)1)<<63))>>IMM6);
+										}
+
+										else if (SHIFT == 3){     //ROR(rotate right)
+                                                if(IMM6 == 0)
+                                                    tempRm = Rm_ud;
+                                                else
+												tempRm = (Rm_ud << (64 - IMM6)) | (Rm_ud >> IMM6);
+										}
+										Rd_ud = result = Rn_ud ^ (~tempRm);
+									
+}

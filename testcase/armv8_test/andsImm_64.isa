@@ -1,0 +1,12 @@
+{
+
+                                        uint64_t temp;
+                                        temp = CLS(64,_N,imm12_hi,imm12_lo);
+                                        temp = Rn_ud & temp;
+                                        Rd_ud = temp;
+                                        CondCodesN = findNegative(64,temp) & 1;
+                                        CondCodesZ = findZero(64,temp) & 1;
+                                        CondCodesC = 0;
+                                        CondCodesV = 0;
+                                    
+}

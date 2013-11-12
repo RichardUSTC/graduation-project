@@ -1,0 +1,5 @@
+{
+
+                                Rd_ud = (Rn_ud << (64 - imm12_lo)) | (Rm_ud >> imm12_lo);
+                            
+}

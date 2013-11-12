@@ -1,0 +1,26 @@
+{
+
+					
+                                                    uint32_t tempRm = 0;
+                                                    uint32_t result;
+
+                                                    //LSL(logical shift left)
+                                                    if(SHIFT == 0){
+                                                        tempRm = Rm;
+                                                        tempRm = Rm << IMM6;
+                                                    }
+
+                                                    //LSR(logical shift right)
+                                                    else if(SHIFT == 1){
+                                                        tempRm = Rm >> IMM6;
+                                                    }
+
+                                                    //ASR(arithmatic shift right)
+                                                    else if(SHIFT == 2){
+                                                        tempRm = (Rm>>IMM6)| -((Rm & (1<<31))>>IMM6);
+                                                    }
+
+                                                    Rd = result = Rn + tempRm;
+
+                                            
+}

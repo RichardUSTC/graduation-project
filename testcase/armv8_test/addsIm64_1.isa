@@ -1,0 +1,14 @@
+{
+
+                                        uint64_t temp;
+                                        uint64_t result;
+                                        temp =(BIT22) ? ((uint64_t)imm12 << 12) : imm12;
+                                        result = Sp_ud + temp;
+                                        Rd_ud = result;
+                                        CondCodesC = findCarry(64,result,Sp_ud,temp) & 1;
+                                        CondCodesV = findOverflow(64,result,Sp_ud,temp) & 1;
+                                        CondCodesN = findNegative(64,result) & 1;
+                                        CondCodesZ = findZero(64,result) & 1;
+                                            
+                                    
+}

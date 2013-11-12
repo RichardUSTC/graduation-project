@@ -1,0 +1,12 @@
+{
+
+                                        uint32_t temp;
+                                        temp = (uint32_t)CLS(32,_N,imm12_hi,imm12_lo);
+                                        temp = Rn & temp;
+                                        Rd = temp;
+                                        CondCodesN = findNegative(32,temp) & 1;
+                                        CondCodesZ = findZero(32,temp) & 1;
+                                        CondCodesC = 0;
+                                        CondCodesV = 0;
+                                    
+}

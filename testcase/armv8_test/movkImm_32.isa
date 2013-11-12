@@ -1,0 +1,6 @@
+{
+
+                                    uint32_t temp = IMM20_5;
+                                    Rd = (Rd & (~(((uint32_t)0xffff) << (16*IMM22_21))))|(temp << 16*IMM22_21);
+                                
+}

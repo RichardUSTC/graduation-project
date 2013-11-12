@@ -1,0 +1,20 @@
+{
+
+
+														uint64_t cnt = 0;
+                                                        if(Rn_ud<63:63> == 1)
+                                                            cnt = 0;
+                                                        else{
+														    for(uint64_t idx = 63; idx >= 0; idx--){
+															    if(Rn_ud<idx:idx> == 0)
+																{
+                                                                    cnt = 64 - idx;
+                                                                    if(cnt==64)  break;
+                                                                }
+															    else
+																    break;
+														    }
+                                                        }
+														Rd_ud = cnt;
+													
+}

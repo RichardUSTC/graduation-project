@@ -1,0 +1,9 @@
+{
+
+                                            if(BIT22)
+                                                Rd = Rn - ((uint32_t)imm12 << 12);
+                                            else
+                                                Rd = Rn - imm12; 
+                                            
+                                        
+}

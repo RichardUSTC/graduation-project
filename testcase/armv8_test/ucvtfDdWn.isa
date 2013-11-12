@@ -1,0 +1,23 @@
+{
+
+                                                                        switch(RMODE(FPCR)){
+                                                                            case 0x0:
+                                                                                fesetround(FE_TONEAREST);
+                                                                                Vd_df = Rn_uw;
+                                                                                break;
+                                                                            case 0x1:
+                                                                                fesetround(FE_UPWARD);
+                                                                                Vd_df = Rn_uw;
+                                                                                break;
+                                                                            case 0x2:
+                                                                                fesetround(FE_DOWNWARD);
+                                                                                Vd_df = Rn_uw;
+                                                                                break;
+                                                                            case 0x3:
+                                                                                fesetround(FE_TOWARDZERO);
+                                                                                Vd_df = Rn_uw;
+                                                                                break;
+                                                                        }
+                                                                        fesetround(FE_TONEAREST);
+                                                                    
+}

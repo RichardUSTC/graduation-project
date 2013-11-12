@@ -1,0 +1,27 @@
+{
+
+		
+											uint32_t tempRm = 0;
+											uint32_t result;
+
+											if(SHIFT == 0){   //LSL(logical shift left)
+												tempRm = Rm << IMM6;
+											}
+
+											else if(SHIFT == 1){      //LSR(logical shift right)
+													tempRm = Rm >> IMM6;
+											}
+
+											else if(SHIFT == 2){      //ASR(arithmatic shift right)
+													tempRm = (Rm >> IMM6)| (-((Rm & (1 << 31)) >> IMM6));
+											}
+
+											Rd = result = Rn - tempRm;
+
+											//set condition flags here
+											CondCodesC = (findCarry(32, result, Rn, ~tempRm)) & 0x1;
+											CondCodesZ = (findZero(32, result)) & 0x1;
+											CondCodesN = (findNegative(32, result)) & 0x1;
+											CondCodesV = (findOverflow(32, result, Rn, ~tempRm)) & 0x1;
+										
+}

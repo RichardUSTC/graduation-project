@@ -1,0 +1,6 @@
+{
+Twin64_t mem = 0;
+                                      mem.a = Rt_ud;
+                                      mem.b = Rt2_ud;
+                                      Mem_uq = mem;
+}

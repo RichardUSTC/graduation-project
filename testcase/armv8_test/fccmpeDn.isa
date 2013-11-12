@@ -1,0 +1,47 @@
+{
+
+                                                    //if(isSnan(Vn_df) || isSnan(Vm_df))
+                                                    // TODO:Invalid Operation exception
+                                                    if(testcond(CondCodesN, CondCodesZ, CondCodesC, CondCodesV, COND)) {
+                                                        
+                                                        if(isNan(&Vn_df, 32) || isNan(&Vm_df, 32))
+                                                        {
+                                                            CondCodesN = 0;
+                                                            CondCodesZ = 0;
+                                                            CondCodesC = 1;
+                                                            CondCodesV = 1;
+                                                        }
+                                                        else
+                                                        {
+                                                            if(Vn_df == Vm_df)
+                                                            {
+                                                                CondCodesN = 0;
+                                                                CondCodesZ = 1;
+                                                                CondCodesC = 1;
+                                                                CondCodesV = 0;
+                                                            }
+                                                            if(Vn_df < Vm_df)
+                                                            {
+                                                                CondCodesN = 1;
+                                                                CondCodesZ = 0;
+                                                                CondCodesC = 0;
+                                                                CondCodesV = 0;
+                                                            }
+                                                            if(Vn_df > Vm_df)
+                                                            {
+                                                                CondCodesN = 0;
+                                                                CondCodesZ = 0;
+                                                                CondCodesC = 1;
+                                                                CondCodesV = 0;
+                                                            }
+                                                        }
+                                                    }
+                                                    else{
+                                                        CondCodesN = (UIMM4 >> 3) & 0x1;
+                                                        CondCodesZ = (UIMM4 >> 2) & 0x1;
+                                                        CondCodesC = (UIMM4 >> 1) & 0x1;
+                                                        CondCodesV = UIMM4 & 0x1;
+                                                    }
+
+                                                
+}

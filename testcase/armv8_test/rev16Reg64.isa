@@ -1,0 +1,15 @@
+{
+
+
+														uint64_t val = Rn_ud;
+
+														Rd_ud = (bits(val, 15, 8) << 0) |
+															(bits(val, 7, 0) << 8) |
+															(bits(val, 31, 24) << 16) |
+															(bits(val, 23, 16) << 24) |
+															(bits(val, 47, 40) << 32) |
+															(bits(val, 39, 32) << 40) |
+															(bits(val, 63, 56) << 48) |
+															(bits(val, 55, 48) << 56);
+													
+}

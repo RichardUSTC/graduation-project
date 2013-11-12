@@ -1,0 +1,10 @@
+{
+
+                                uint64_t lo = IMM30_29;
+                                uint64_t hi = IMM23_5;
+                                uint64_t temp = (hi << 2) | lo;
+                                //signed immediate extends
+                                temp = (sext<21>(temp)) << 12;
+                                Rd_ud = (PC & (mask(64) << 12)) + temp;
+                        
+}

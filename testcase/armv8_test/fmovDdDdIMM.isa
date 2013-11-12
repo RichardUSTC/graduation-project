@@ -1,0 +1,15 @@
+{
+
+                                                    /**
+                                                     *bit20:sign bit
+                                                     *bit19_17:exponent (e-7)%8=x
+                                                     *bit16_13:fraction omit the uppermost 1
+                                                     **/
+                                                    
+                                                    uint64_t signbit= IMM8<20:20> & 0x1;
+                                                    uint64_t exponent = 1023 + ((IMM8<19:19> == 1)? (IMM8<19:17> - 7) :((IMM8<19:17> -7)%8));
+                                                    uint64_t fraction = IMM8<16:13>;
+                                                    
+                                                    Vd = (signbit << 63) | (exponent << 52) | (fraction << 48);
+                                                    
+}

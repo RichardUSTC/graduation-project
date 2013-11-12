@@ -1,0 +1,10 @@
+{
+
+                                                    if (Rm_ud == 0){
+                                                        Rd_ud = 0;
+                                                    }
+                                                    else{
+                                                        Rd_ud = Rn_ud / Rm_ud;
+                                                    }
+                                                
+}

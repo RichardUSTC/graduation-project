@@ -1,0 +1,14 @@
+{
+
+
+															uint32_t result;
+															Rd = result = Rn + Rm + CondCodesC;
+                                                            uint32_t temp = Rm + CondCodesC;
+															//set condition flags here
+															CondCodesC = (findCarry(32, result, Rn, temp)) & 0x1;
+															CondCodesZ = (findZero(32, result)) & 0x1;
+															CondCodesN = (findNegative(32, result)) & 0x1;
+															CondCodesV = (findOverflow(32, result, Rn, temp)) & 0x1;
+
+														
+}

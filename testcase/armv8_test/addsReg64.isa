@@ -1,0 +1,31 @@
+{
+
+											
+                                                    uint64_t tempRm = 0;
+                                                    uint64_t result;
+
+                                                    //LSL(logical shift left)
+                                                    if(SHIFT == 0){
+                                                        tempRm = Rm_ud;
+                                                        tempRm = Rm_ud << IMM6;
+                                                    }
+
+                                                    //LSR(logical shift right)
+                                                    else if (SHIFT == 1){
+                                                        tempRm = Rm_ud >> IMM6;
+                                                    }
+
+                                                    //ASR(arithmatic shift right)
+                                                    else if (SHIFT == 2){
+                                                        tempRm = (Rm_ud >> IMM6)| (-((Rm_ud & (((uint64_t)1) << 63)) >> IMM6));
+                                                    }
+
+                                                    Rd_ud = result = Rn_ud + tempRm;
+
+                                                    //set condition flags here
+                                                    CondCodesC = (findCarry(64, result, Rn_ud, tempRm)) & 0x1;
+                                                    CondCodesZ = (findZero(64, result)) & 0x1;
+                                                    CondCodesN = (findNegative(64, result)) & 0x1;
+                                                    CondCodesV = (findOverflow(64, result, Rn_ud, tempRm)) & 0x1;
+										
+}

@@ -1,0 +1,3 @@
+{
+ cond = testcond(CondCodesN, CondCodesZ, CondCodesC, CondCodesV, COND2); 
+}

@@ -1,0 +1,9 @@
+{
+
+                                uint64_t lo = IMM30_29;
+                                uint64_t hi = IMM23_5;
+                                uint64_t temp = (hi << 2) | lo;
+                                temp = sext<21>(temp);
+                                Rd_ud = PC + temp;
+                        
+}

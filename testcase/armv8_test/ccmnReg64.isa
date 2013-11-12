@@ -1,0 +1,20 @@
+{
+
+
+                                                        if(testcond(CondCodesN, CondCodesZ, CondCodesC, CondCodesV, COND)) {
+															uint64_t result = Rn_ud + Rm_ud;
+
+															//set condition flags here
+															CondCodesC = (findCarry(64, result, Rn_ud, Rm_ud)) & 0x1;
+															CondCodesZ = (findZero(64, result)) & 0x1;
+															CondCodesN = (findNegative(64, result)) & 0x1;
+															CondCodesV = (findOverflow(64, result, Rn_ud, Rm_ud)) & 0x1;
+														}
+														else{
+															CondCodesN = (UIMM4 >> 3) & 0x1;
+															CondCodesZ = (UIMM4 >> 2) & 0x1;
+															CondCodesC = (UIMM4 >> 1) & 0x1;
+															CondCodesV = UIMM4 & 0x1;
+														}
+													
+}

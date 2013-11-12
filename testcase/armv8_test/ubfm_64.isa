@@ -1,0 +1,10 @@
+{
+
+                                        if(imm12_hi <= imm12_lo){
+                                            Rd_ud = (Rn_ud << (64 - imm12_lo - 1)) >> (64 - imm12_lo + imm12_hi -1);
+                                        }                 
+                                        else{
+                                            Rd_ud = (Rn_ud << (64 - imm12_lo - 1)) >> (imm12_hi - imm12_lo - 1);
+                                        }
+                                   
+}

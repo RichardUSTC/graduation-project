@@ -1,0 +1,7 @@
+{
+
+                                                                        float temp;
+                                                                        temp = fabsf(u2f(Vn_uw));
+                                                                        Vd_uw = f2u(temp);
+                                                                    
+}

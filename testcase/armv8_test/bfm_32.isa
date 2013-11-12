@@ -1,0 +1,19 @@
+{
+
+                                    uint32_t temp;
+                                    uint32_t rd_le=0,rd_mi=0,rd_ri=0;
+                                    if(imm12_hi <= imm12_lo){
+                                        temp = imm12_lo - imm12_hi;
+                                        rd_le = (Rd >> (temp + 1)) << (temp +1);
+                                        rd_mi = (Rn << (32 - imm12_lo - 1)) >> (32 - imm12_lo + imm12_hi -1);
+                                        Rd = rd_le | rd_mi;
+                                    }
+                                    else{
+                                        temp = imm12_hi - imm12_lo;
+                                        rd_le = (Rd >> (32 - temp + 1)) << (32 - temp + 1);
+                                        rd_mi = (Rn << (32 - imm12_lo - 1)) >> (temp - 1);
+                                        rd_ri = (Rd << imm12_hi) >> imm12_hi;
+                                        Rd = rd_le | rd_mi | rd_ri;
+                                    }
+                                
+}

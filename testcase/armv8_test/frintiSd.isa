@@ -1,0 +1,18 @@
+{
+
+                                                                switch(RMODE(FPCR)){
+                                                                    case 0x0:
+                                                                        Vd_uw = f2u(nearbyintf(u2f(Vn_uw)));
+                                                                        break;
+                                                                    case 0x1:
+                                                                        Vd_uw = f2u(ceilf(u2f(Vn_uw)));
+                                                                        break;
+                                                                    case 0x2:
+                                                                        Vd_uw = f2u(floorf(u2f(Vn_uw)));
+                                                                        break;
+                                                                    case 0x3:
+                                                                        Vd_uw = f2u(truncf(u2f(Vn_uw)));
+                                                                        break;
+                                                                }
+                                                            
+}

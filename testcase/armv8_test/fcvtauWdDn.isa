@@ -1,0 +1,20 @@
+{
+
+                                                                            //todo
+                                                                            // if(Vn_df is NaN || Vn_df is Infinity)
+                                                                            //todo:raise the invalid operation exception (FPSR.IOC)
+                                                                            // else if(Vn_df is a denormal input && flush_to_zero mode)
+                                                                            //todo:Vn_df = 0 && raise the input denormal exception (FPSR.IDC)
+                                                                            double tmp;
+                                                                            tmp = round(Vn_df);
+                                                                            if(tmp >= 4294967296.0){
+                                                                                Rd_uw = 0xffffffff;
+                                                                            }
+                                                                            else if(tmp < 0.0){
+                                                                                Rd_uw = 0x0;
+                                                                            }
+                                                                            else{
+                                                                                Rd_uw = tmp;
+                                                                            }
+                                                                        
+}

@@ -1,0 +1,22 @@
+{
+
+                                                                                //todo
+                                                                                // if(Vn_uw is NaN || Vn_uw is Infinity)
+                                                                                //todo:raise the invalid operation exception (FPSR.IOC)
+                                                                                // else if(Vn_uw is a denormal input && flush_to_zero mode)
+                                                                                //todo:Vn_uw = 0 && raise the input denormal exception (FPSR.IDC)
+                                                                                float tmp;
+                                                                                fesetround(FE_DOWNWARD);
+                                                                                tmp=rintf(u2f(Vn_uw));
+                                                                                fesetround(FE_TONEAREST);
+                                                                                if(tmp >= 2147483648.0){
+                                                                                    Rd_sw = 0x7fffffff;
+                                                                                }
+                                                                                else if(tmp < -2147483648.0){
+                                                                                    Rd_sw = 0x80000000;
+                                                                                }
+                                                                                else{
+                                                                                    Rd_sw = tmp;
+                                                                                }
+                                                                                
+}

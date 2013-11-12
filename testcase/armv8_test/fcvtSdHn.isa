@@ -1,0 +1,9 @@
+{
+             //tested
+                                                                        uint32_t temp1,temp2,temp3;
+                                                                        temp1 = ((uint32_t)(Vn_uh & 0x8000) ) << 16;
+                                                                        temp2 = ((uint32_t)(Vn_uh & 0x7c00) ) << 13;
+                                                                        temp3 = ((uint32_t)(Vn_uh & 0x03ff) ) << 13;
+                                                                        Vd_uw= temp1 | temp2 | temp3;
+                                                                        
+}

@@ -1,0 +1,80 @@
+{
+
+                                                                    union v{
+                                                                        double f;
+                                                                        uint64_t u;
+                                                                    };
+                                                                    v vn, vm, vd;
+                                                                    vn.f = Vn_df;
+                                                                    vm.f = Vm_df;
+                                                                    vd.f = 0.0;
+                                                                    
+                                                                    if(isSnan(&vn.u, 64))
+                                                                    {
+                                                                        vn.u = vn.u | 0x0008000000000000;
+                                                                        //todo:raise FpExc_InvalidOp
+                                                                        vd.f = vn.f;
+                                                                        //todo: if(DefaultNan requested)
+                                                                        //  vd.f = ARM64_QNAN;
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else if(isSnan(&vm.u, 64))
+                                                                    {
+                                                                        vm.u |= 0x0008000000000000;
+                                                                        //todo:raise FpExc_InvalidOp
+                                                                        vd.f = vm.f;
+                                                                        //todo: if(DefaultNan requested)
+                                                                        //  vd.f = ARM64_QNAN;
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else if(isQnan(&vn.u, 64))
+                                                                    {
+                                                                        vd.f = vn.f;
+                                                                        //todo: if(DefaultNan requested)
+                                                                        //  vd.f = ARM64_QNAN;
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else if(isQnan(&vm.u, 64))
+                                                                    {
+                                                                        vd.f = vm.f;
+                                                                        //todo: if(DefaultNan requested)
+                                                                        //  vd.f = ARM64_QNAN;
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else if((isInfinity(&vn.u, 64) && vm.u<62:0> == 0) || (vn.u<62:0> == 0 && isInfinity(&vm.u, 64)))
+                                                                    {
+                                                                        Vd_df = vd.f = ARM64_QNAN;//todo: raise FPExc_InvalidOp exception
+                                                                    }
+                                                                    else if(isInfinity(&vn.u, 64) || isInfinity(&vm.u, 64))
+                                                                    {
+                                                                        vd.u = 0x7FF8000000000000;
+                                                                        vd.u |= (((vn.u<63:63> == vm.u<63:63>)? 0x0UL : 0x1UL) << 63);
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else if(vm.u<62:0> == 0 || vn.u<62:0> == 0)
+                                                                    {
+                                                                        vd.u = 0x0UL;
+                                                                        vd.u |= (((vn.u<63:63> == vm.u<63:63>)? 0x0UL : 0x1UL) << 63);
+                                                                        Vd_df = vd.f;
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                         switch(RMODE(FPCR)){
+                                                                            case 0x0:
+                                                                                fesetround(FE_TONEAREST);
+                                                                                break;
+                                                                            case 0x1:
+                                                                                fesetround(FE_UPWARD);
+                                                                                break;
+                                                                            case 0x2:
+                                                                                fesetround(FE_DOWNWARD);
+                                                                                break;
+                                                                            case 0x3:
+                                                                                fesetround(FE_TOWARDZERO);
+                                                                                break;
+                                                                         }
+                                                                         Vd_df = vd.f = -(vn.f * vm.f);
+                                                                         fesetround(FE_TONEAREST);
+                                                                    }
+                                                                
+}

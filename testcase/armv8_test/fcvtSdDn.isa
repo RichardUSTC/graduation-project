@@ -1,0 +1,29 @@
+{
+            //tested
+                                                                   union v{
+                                                                    float f;
+                                                                    uint32_t u;
+                                                                    };
+                                                                   union d{
+                                                                    double f;
+                                                                    uint64_t u;
+                                                                    };
+                                                                union v vd;
+                                                                union d vn;
+                                                                vn.u = Vn_ud;
+                                                                vd.f = vn.f;
+                                                    if(isSnan(&vn.u, 64) || isQnan(&vn.u, 64))                           
+                                                    {    if (RMODE25(FPCR))
+                                                            ;//result = FPDefaultNaN(32);
+                                                        //else
+                                                            ;//result = sign : '11111111 1' : operand<50:29>;
+                                                        if (isSnan(&vn.u,64))
+                                                            ;//todo:FPProcessException(FPExc_InvalidOp, fpscr_val);
+                                                    }
+                                                    else if(isInfinity(&vn.u, 64))
+                                                        //result = FPInfinity(sign, 32);
+                                                        vd.u = ARM32_QNAN;
+                                                    else
+                                                    Vd_uw = vd.u ; 
+                                                                        
+}

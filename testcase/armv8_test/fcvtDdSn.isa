@@ -1,0 +1,30 @@
+{
+            
+                                                                   union v{
+                                                                    float f;
+                                                                    uint32_t u;
+                                                                    };
+                                                                   union d{
+                                                                    double f;
+                                                                    uint64_t u;
+                                                                    };
+                                                                union v vn;
+                                                                union d vd;
+                                                                vn.u = Vn_uw;
+                                                                vd.f = vn.f;
+                                                    if(isSnan(&vn.u, 32) || isQnan(&vn.u, 32))                           
+                                                    {    if (RMODE25(FPCR))
+                                                            ;//result = FPDefaultNaN(64);
+                                                        //else
+                                                            //result = sign : '11111111111 1' : operand<21:0> : Zeros(29);
+                                                        //    vd.u = ( vn.u<31:31> << 63 ) | 0x7FF8000000000000 | vn.u<21:0> << 29;
+                                                        if (isSnan(&vn.u,32))
+                                                            ;//todo:FPProcessException(FPExc_InvalidOp, fpscr_val);
+                                                    }
+                                                    else if(isInfinity(&vn.u, 32))
+                                                        //result = FPInfinity(sign, 64);
+                                                        vd.u = ARM64_QNAN;
+                                                    else
+                                                    Vd_ud = vd.u ; 
+                                                                        
+}

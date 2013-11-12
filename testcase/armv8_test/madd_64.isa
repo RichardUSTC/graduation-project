@@ -1,0 +1,3 @@
+{
+Rd_ud = Ra_ud + ( Rn_ud * Rm_ud );
+}

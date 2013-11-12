@@ -1,0 +1,25 @@
+{
+
+                                        uint64_t temp;
+                                        uint64_t rd_le=0,rd_mi=0,rd_ri=0;
+                                        if(imm12_hi <= imm12_lo){//s is imm12_lo,
+                                            temp = imm12_lo - imm12_hi;
+                                            rd_mi = (Rn_ud << (64 - imm12_lo - 1)) >> (64 - imm12_lo + imm12_hi -1);
+                                            if((Rn_ud >> imm12_lo) & 1)
+                                                rd_le = (mask(64) >> (temp + 1)) << (temp +1);
+                                            else
+                                                rd_le = 0;
+                                            Rd_ud = rd_le | rd_mi;
+                                        }
+                                        else{
+                                            temp = imm12_hi - imm12_lo;
+                                            rd_mi = (Rn_ud << (64 - imm12_lo - 1)) >> (temp - 1); 
+                                            if((Rn_ud >> imm12_lo) & 1)
+                                                rd_le = (mask(64) >> (64 - temp + 1)) << (64 - temp + 1); 
+                                            else
+                                                rd_le = 0;
+                                            rd_ri = 0;
+                                            Rd_ud = rd_le | rd_mi | rd_ri;
+                                        }
+                                    
+}

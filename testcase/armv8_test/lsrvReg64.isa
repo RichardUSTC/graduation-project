@@ -1,0 +1,7 @@
+{
+
+
+														//LSR (logical shift right)
+                                						Rd_ud = Rn_ud >> (Rm_ud & 0x3f);
+													
+}

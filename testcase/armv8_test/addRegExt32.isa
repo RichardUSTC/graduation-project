@@ -1,0 +1,44 @@
+{
+
+                                                
+                                                uint32_t result;
+                                                uint32_t tempRm = 0;
+
+                                                switch(EXTEND){
+                                                    case 0 :        //UXTB
+                                                        //add wd, wn, wm, UXTB #EXLSL
+                                                        tempRm = (Rm & 0x000000FF) << EXLSL;
+                                                        break;
+                                                    case 1 :        //UXTH
+                                                        //add wd, wn, wm, UXTH #EXLSL
+                                                        tempRm = (Rm & 0x0000FFFF) << EXLSL;
+                                                        break;
+                                                    case 2 :        //UXTW
+                                                        //add wd, wn, wm, UXTW #EXLSL
+                                                    case 3 :        //UXTX
+                                                        //add wd, wn, wm, UXTX #EXLSL
+                                                        tempRm = Rm << EXLSL;
+                                                        break;
+                                                    case 4 :        //SXTB
+                                                        //add wd, wn, wm, SXTB #EXLSL
+                                                        tempRm = (uint32_t)sext<8>(Rm);
+                                                        tempRm = tempRm <<EXLSL;
+                                                        break;
+                                                    case 5 :        //SXTH
+                                                        //add wd, wn, wm, SXTH #EXLSL
+                                                        tempRm = (uint32_t)sext<16>(Rm);
+                                                        tempRm = tempRm <<EXLSL;
+                                                        break;
+                                                    case 6 :        //SXTW
+                                                        //add wd, wn, wm, SXTW #EXLSL
+                                                        tempRm = Rm <<EXLSL;
+                                                        break;
+                                                    case 7 :        //SXTX
+                                                        //add wd, wn, wm, SXTX #EXLSL
+                                                        tempRm = Rm <<EXLSL;
+                                                        break;
+                                                }
+                                                Rdsp = result = Rnsp + tempRm;
+
+                                            
+}

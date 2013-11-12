@@ -1,0 +1,12 @@
+{
+
+
+													uint64_t tempRm = 0;
+													uint64_t result;
+
+													//ASR(arithmatic shift right)
+													tempRm = Rm_ud & 0x3f;
+													result = (Rn_ud >> tempRm)| -((Rn_ud & ((0x1UL) << 63))>>tempRm);
+													Rd_ud = result;	
+												
+}

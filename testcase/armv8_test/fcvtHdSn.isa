@@ -1,0 +1,8 @@
+{
+                                                                                                               uint16_t temp1,temp2,temp3;
+                                                                        temp1 = ( Vn_uw & 0x80000000 ) >> 16 ;
+                                                                        temp2 = ( Vn_uw & 0x0f800000 ) >> 13;
+                                                                        temp3 =( Vn_uw & 0x007fe000 ) >> 13;
+                                                                        Vd_uh= temp1 | temp2 | temp3;
+                                                                        
+}

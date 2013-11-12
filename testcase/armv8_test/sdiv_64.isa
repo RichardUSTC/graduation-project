@@ -1,0 +1,13 @@
+{
+
+                                                if(Rm_sd == 0){
+                                                    Rd_sd = 0;
+                                                }
+                                                else if(Rn_sd == 0x8000000000000000 && Rm_sd == -1){
+                                                    Rd_sd = 0x8000000000000000;
+                                                }
+                                                else{
+                                                    Rd_sd = Rn_sd / Rm_sd;
+                                                }
+                                            
+}

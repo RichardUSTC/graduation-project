@@ -1,0 +1,9 @@
+{
+            //tested 
+                                                                        uint64_t temp1,temp2,temp3;
+                                                                        temp1 = ((uint64_t)(Vn_uh & 0x8000)) << 48;
+                                                                        temp2 = ((uint64_t)(Vn_uh & 0x7c00)) << 42;
+                                                                        temp3 = ((uint64_t)(Vn_uh &  0x3ff)) << 42;
+                                                                        Vd_ud= temp1 | temp2 | temp3;
+                                                                        
+}
