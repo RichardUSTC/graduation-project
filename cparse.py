@@ -593,20 +593,25 @@ def p_expression_statement(t):
 # compound-statement:
 
 def p_compound_statement_1(t):
-    'compound_statement : LBRACE declaration_list statement_list RBRACE'
-    t[0] = translator.CompoundStatement(t[2] + t[3])
+    'compound_statement : LBRACE block_item_list RBRACE'
+    t[0] = translator.CompoundStatement(t[2])
 
 def p_compound_statement_2(t):
-    'compound_statement : LBRACE statement_list RBRACE'
-    t[0] = translator.CompoundStatement(t[2])
-
-def p_compound_statement_3(t):
-    'compound_statement : LBRACE declaration_list RBRACE'
-    t[0] = translator.CompoundStatement(t[2])
-
-def p_compound_statement_4(t):
     'compound_statement : LBRACE RBRACE'
     t[0] = translator.CompoundStatement()
+
+def p_block_item_list_1(t):
+    'block_item_list : block_item'
+    t[0] = [ t[1] ]
+
+def p_block_item_list_2(t):
+    'block_item_list : block_item_list block_item'
+    t[0] = t[1] + [ t[2] ]
+
+def p_block_item(t):
+    '''block_item : statement
+                  | declaration'''
+    t[0] = t[1]
 
 # statement-list:
 
