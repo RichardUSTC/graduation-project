@@ -12,6 +12,7 @@ import translator
 import pdb
 
 class UnhandledSyntaxError(Exception): pass
+class ParseError(Exception): pass
 
 # Get the token map
 tokens = clex.tokens
@@ -984,6 +985,7 @@ def p_empty(t):
 
 def p_error(t):
     print("Whoa. We're hosed")
+    raise ParseError
 
 import profile
 # Build the grammar
