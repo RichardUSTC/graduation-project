@@ -688,7 +688,10 @@ def p_expression_1(t):
 
 def p_expression_2(t):
     'expression : expression COMMA assignment_expression'
-    raise UnhandledSyntaxError
+    if isinstance(t[1], translator.CommaExpression):
+        t[0] = t[1].append(t[3])
+    else:
+        t[0] = translator.CommaExpression([t[1], t[3]])
 
 # assigment_expression:
 def p_assignment_expression_1(t):

@@ -206,6 +206,14 @@ class FunctionCallExpression(Expression):
 	def __str__(self):
 		return "%s(%s)" %(str(self.function), str(self.arguments))
 
+class CommaExpression(Expression):
+	def __init__(self, expressionList):
+		self.expressionList = expressionList
+	def __str__(self):
+		return str(self.expressionList)
+	def append(self, expression):
+		self.expressionList.append(expression)
+
 class PredefinedRegister(Variable):
 	pass
 
