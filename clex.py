@@ -136,7 +136,7 @@ def t_ID(t):
     return t
 
 # Integer literal
-t_ICONST = r'(?:[+-]?)(?:0[bBxX]?)?\d+([uU][lL]|[lL][uU]|[uU]|[lL])?'
+t_ICONST = r'(?:[+-]?)(?:0[bBxX]?)?[\da-fA-F]+([uU][lL]|[lL][uU]|[uU]|[lL])?'
 
 # Floating literal
 t_FCONST = r'((\d+)(\.\d+)(e(\+|-)?(\d+))? | (\d+)e(\+|-)?(\d+))([lL]|[fF])?'
