@@ -882,6 +882,13 @@ def p_cast_expression_2(t):
     else:
         raise UnhandledSyntaxError
 
+def p_cast_expression_3(t):
+    'cast_expression :  type_specifier LPAREN cast_expression RPAREN'
+    if isinstance(t[1], translator.Type):
+        t[0] = translator.CastExpression(t[1], t[3])
+    else:
+        raise UnhandledSyntaxError
+
 # unary-expression:
 def p_unary_expression_1(t):
     'unary_expression : postfix_expression'
