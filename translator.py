@@ -427,7 +427,7 @@ class DictStack(list):
 			except KeyError:
 				pass
 		return None
-	def set(self, name, val):
+	def add(self, name, val):
 		assert len(self) > 0
 		self[-1][name] = val
 	def has(self, name):
@@ -438,5 +438,7 @@ class DictStack(list):
 
 typeIDTable = DictStack()
 typeIDTable.push(predefinedTypeID)
+typeIDTable.push()
+
 symbolTable = DictStack()
 symbolTable.push(predefinedValues)
