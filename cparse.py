@@ -1006,5 +1006,6 @@ if __name__ == "__main__":
         sys.exit(-1)
     with open(sys.argv[1], "r") as fIn:
         data = fIn.read()
+        data = translator.preprocess(data)
         result = parser.parse(data, debug=1)
         print result

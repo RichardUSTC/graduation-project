@@ -1,6 +1,49 @@
 import exceptions
 import re
 
+#####################################################################
+#
+#                      Bitfield Operator Support
+#
+#####################################################################
+
+bitOp1ArgRE = re.compile(r'<\s*(\w+)\s*:\s*>')
+
+bitOpWordRE = re.compile(r'(?<![\w\.])([\w\.]+)<\s*(\w+)\s*:\s*(\w+)\s*>')
+bitOpExprRE = re.compile(r'\)<\s*(\w+)\s*:\s*(\w+)\s*>')
+
+def substBitOps(code):
+    # first convert single-bit selectors to two-index form
+    # i.e., <n> --> <n:n>
+    code = bitOp1ArgRE.sub(r'<\1:\1>', code)
+    # simple case: selector applied to ID (name)
+    # i.e., foo<a:b> --> bits(foo, a, b)
+    code = bitOpWordRE.sub(r'bits(\1, \2, \3)', code)
+    # if selector is applied to expression (ending in ')'),
+    # we need to search backward for matching '('
+    match = bitOpExprRE.search(code)
+    while match:
+        exprEnd = match.start()
+        here = exprEnd - 1
+        nestLevel = 1
+        while nestLevel > 0:
+            if code[here] == '(':
+                nestLevel -= 1
+            elif code[here] == ')':
+                nestLevel += 1
+            here -= 1
+            if here < 0:
+                sys.exit("Didn't find '('!")
+        exprStart = here+1
+        newExpr = r'bits(%s, %s, %s)' % (code[exprStart:exprEnd+1],
+                                         match.group(1), match.group(2))
+        code = code[:exprStart] + newExpr + code[match.end():]
+        match = bitOpExprRE.search(code)
+    return code
+
+def preprocess(code):
+	return substBitOps(code)
+
 class UnhandledTranslationError(Exception):
 	def __init__(self, nodeName):
 		self.nodeName = nodeName
