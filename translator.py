@@ -90,6 +90,10 @@ class IntType(Type):
 		s += "int%d_t" % self.size
 		return s
 
+class Twin64Type(Type):
+	def __str__(self):
+		return "Twin64_t"
+
 class FloatType(Type):
 	def __str__(self):
 		return 'float'
@@ -391,10 +395,17 @@ class CompoundStatement(Statement):
 		s += " }"
 		return s
 
-predefinedTypeID = (
-    "uint8_t", "uint16_t", "uint32_t", "uint64_t",
-    "int8_t", "int16_t", "int32_t", "int64_t", "Twin64_t",
-    )
+predefinedTypeID = {
+    "uint8_t":IntType(False, 8),
+    "uint16_t":IntType(False, 16),
+    "uint32_t":IntType(False, 32),
+    "uint64_t":IntType(False, 64),
+    "int8_t":IntType(True, 8),
+    "int16_t":IntType(True, 16),
+    "int32_t":IntType(True, 32),
+    "int64_t":IntType(True, 64),
+    "Twin64_t":Twin64Type(),
+    }
 
 predefinedValues = {
 	"Rd": PredefinedRegister("Rd", "int"),
@@ -403,26 +414,29 @@ predefinedValues = {
 	"SHIFT": PredefinedConstant("SHIFT", "int")
 	}
 
-class SymbolTable(object):
-	symbolStack = [predefinedValues]
-	@classmethod
-	def find(cls, name):
-		for d in cls.symbolStack[::-1]:
+class DictStack(list):
+	def push(self, item={}):
+		self.append(item)
+	def top(self):
+		return self[-1]
+	def get(self, name):
+		for d in self[::-1]:
 			try:
-				var = d[name]
-				return var
+				val = d[name]
+				return val
 			except KeyError:
 				pass
 		return None
-	@classmethod
-	def put(cls, name, var):
-		if len(cls.symbolStack) > 1:
-			cls.symbolStack[-1][name] = var
+	def set(self, name, val):
+		assert len(self) > 0
+		self[-1][name] = val
+	def has(self, name):
+		if self.get(name) != None:
+			return True
 		else:
-			raise Exception()
-	@classmethod
-	def push(cls):
-		symbolStack.append({})
-	@classmethod
-	def pop(cls):
-		symbolStack.pop()
+			return False
+
+typeIDTable = DictStack()
+typeIDTable.push(predefinedTypeID)
+symbolTable = DictStack()
+symbolTable.push(predefinedValues)

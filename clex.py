@@ -5,6 +5,7 @@
 # ----------------------------------------------------------------------
 
 import ply.lex as lex
+import translator
 
 # Reserved words
 reserved = (
@@ -125,13 +126,10 @@ reserved_map = { }
 for r in reserved:
     reserved_map[r.lower()] = r
 
-import translator
-type_id = translator.predefinedTypeID
-
 def t_ID(t):
     r'[A-Za-z_][\w_]*'
     t.type = reserved_map.get(t.value,"ID")
-    if t.value in type_id:
+    if translator.typeIDTable.has(t.value):
         t.type = "TYPEID"
     return t
 
