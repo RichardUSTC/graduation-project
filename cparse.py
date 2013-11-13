@@ -207,7 +207,8 @@ def p_type_qualifier(t):
 # struct-or-union-specifier
 
 def p_struct_or_union_specifier_1(t):
-    'struct_or_union_specifier : struct_or_union ID LBRACE struct_declaration_list RBRACE'
+    '''struct_or_union_specifier : struct_or_union ID LBRACE struct_declaration_list RBRACE
+                                 | struct_or_union TYPEID LBRACE struct_declaration_list RBRACE'''
     t[0] = t[1]
     t[0].name = t[2]
     t[0].definition = t[4]
@@ -219,7 +220,8 @@ def p_struct_or_union_specifier_2(t):
     t[0].definition = t[3]
 
 def p_struct_or_union_specifier_3(t):
-    'struct_or_union_specifier : struct_or_union ID'
+    '''struct_or_union_specifier : struct_or_union ID
+                                 | struct_or_union TYPEID'''
     t[0] = t[1]
     t[0].name = t[2]
 
