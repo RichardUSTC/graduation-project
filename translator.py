@@ -200,7 +200,7 @@ class IntConstant(Constant):
 		else:
 			base = 10
 		j = len(value)
-		suffix = value[-1:-2]
+		suffix = value[-2:]
 		if 'l' in suffix:
 			size = 64
 			j = j-1
