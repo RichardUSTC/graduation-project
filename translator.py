@@ -218,6 +218,20 @@ class CommaExpression(Expression):
 	def append(self, expression):
 		self.expressionList.append(expression)
 
+class InstanceMemberAccessExpression(Expression):
+	def __init__(self, instance, member):
+		self.instance = instance
+		self.member = member
+	def __str__(self):
+		return "%s.%s" % (str(self.instance), str(self.member))
+
+class PointerMemberAccessExpression(Expression):
+	def __init__(self, pointer, member):
+		self.pointer = pointer
+		self.member = member
+	def __str__(self):
+		return "%s->%s" % (str(self.pointer), str(self.member))
+
 class PredefinedRegister(Variable):
 	pass
 
