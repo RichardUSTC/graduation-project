@@ -6,8 +6,8 @@ function testDir(){
         then
             echo "+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++"
             echo "Parsing $file ..."
-            echo "python cparse.py $file 2>output"
-            python cparse.py $file 2>output
+            echo "python cparse.py $file"
+            python cparse.py $file 2>output/`basename ${file}`.debug 1>output/`basename ${file}`.output
             if [ $? -ne 0 ]
             then
                 exit $?
@@ -20,3 +20,4 @@ function testDir(){
 }
 
 testDir testcase
+echo "All test finished"
