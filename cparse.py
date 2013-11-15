@@ -494,8 +494,15 @@ def p_initializer_list_2(t):
 
 def p_type_name(t):
     'type_name : specifier_qualifier_list abstract_declarator_opt'
-    if isinstance(t[1], translator.Type) and t[2] == None:
-        t[0] = t[1]
+    if isinstance(t[1], translator.Type):
+        if t[2] == None:
+            t[0] = t[1]
+        elif isinstance(t[2], translator.PointerType):
+            assert t[2].baseType == None
+            t[0] = t[2]
+            t[0].baseType = t[1]
+        else:
+            raise UnhandledSyntaxError
     else:
         raise UnhandledSyntaxError
 
@@ -505,13 +512,13 @@ def p_abstract_declarator_opt_1(t):
 
 def p_abstract_declarator_opt_2(t):
     'abstract_declarator_opt : abstract_declarator'
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 # abstract-declarator:
 
 def p_abstract_declarator_1(t):
     'abstract_declarator : pointer '
-    raise UnhandledSyntaxError
+    t[0] = t[1]
 
 def p_abstract_declarator_2(t):
     'abstract_declarator : pointer direct_abstract_declarator'
@@ -931,7 +938,7 @@ def p_postfix_expression_1(t):
 
 def p_postfix_expression_2(t):
     'postfix_expression : postfix_expression LBRACKET expression RBRACKET'
-    raise UnhandledSyntaxError
+    t[0] = translator.ArrayAccessExpression(t[1], t[3])
 
 def p_postfix_expression_3(t):
     'postfix_expression : postfix_expression LPAREN argument_expression_list RPAREN'
