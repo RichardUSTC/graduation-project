@@ -1,5 +1,6 @@
 import exceptions
 import re
+import struct
 
 #####################################################################
 #
@@ -80,7 +81,7 @@ class CharType(Type):
         return 'char'
 
 class IntType(Type):
-    def __init__(self, isSigned=True, size=32):
+    def __init__(self, isSigned=True, size=struct.calcsize("i")):
         self.isSigned = isSigned
         self.size = size
     def __str__(self):
@@ -215,11 +216,11 @@ class CommaExpression(Expression):
     def __init__(self, expressionList):
         self.expressionList = expressionList
     def __str__(self):
-    	s = "("
-    	for item in self.expressionList:
-    		s += str(item)
-    		s += ","
-    	s = s[:-1] + ")"
+        s = "("
+        for item in self.expressionList:
+            s += str(item)
+            s += ","
+        s = s[:-1] + ")"
         return s
     def append(self, expression):
         self.expressionList.append(expression)
@@ -239,11 +240,11 @@ class PointerMemberAccessExpression(Expression):
         return "(%s)->%s" % (str(self.pointer), str(self.member))
 
 class ArrayAccessExpression(Expression):
-	def __init__(self, base, index):
-		self.base = base
-		self.index = index
-	def __str__(self):
-		return "(%s)[%s]" % (str(self.base), str(self.index))
+    def __init__(self, base, index):
+        self.base = base
+        self.index = index
+    def __str__(self):
+        return "(%s)[%s]" % (str(self.base), str(self.index))
 
 class PredefinedRegister(Variable):
     pass
@@ -263,7 +264,7 @@ class IntConstant(Constant):
         sign = 1
         i = 0
         isSigned = True
-        size = 32
+        size = struct.calcsize("i")
         if value[i] == '+':
             i = i+1
         elif value[i] == '-':
@@ -282,9 +283,12 @@ class IntConstant(Constant):
         else:
             base = 10
         j = len(value)
-        suffix = value[-2:]
-        if 'l' in suffix:
-            size = 64
+        suffix = value[-3:]
+        if 'll' in suffix:
+            size = struct.calcsize("q")
+            j = j-2
+        elif 'l' in suffix:
+            size = struct.calcsize("l")
             j = j-1
         if 'u' in suffix:
             isSigned = False
@@ -418,10 +422,10 @@ class CompoundStatement(Statement):
     def __str__(self):
         s = "{\n"
         if self.statements != None:
-        	assert isinstance(self.statements, list)
-        	for item in self.statements:
-        		s += str(item)
-        		s += ";\n"
+            assert isinstance(self.statements, list)
+            for item in self.statements:
+                s += str(item)
+                s += ";\n"
         s += "\n}"
         return s
 
