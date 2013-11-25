@@ -1,0 +1,30 @@
+{
+    Rd = Rm + Rn;
+    Rd = Rm - Rn;
+    Rd = Rm * Rn;
+    Rd = Rm / Rn;
+    Rd = Rm % Rn;
+    Rd = Rm << Rn;
+    Rd = Rm >> Rn;
+    Rd = Rm & Rn;
+    Rd = Rm | Rn;
+    Rd = Rm ^ Rn;
+    Rd = Rm && Rn;
+    Rd = Rm || Rn;
+    Rd = Rm > Rn;
+    Rd = Rm < Rn;
+    Rd = Rm >= Rn;
+    Rd = Rm <= Rn;
+    Rd = Rm == Rn;
+    Rd = Rm != Rn;
+    Rd += Rn;
+    Rd -= Rn;
+    Rd *= Rn;
+    Rd /= Rn;
+    Rd %= Rn;
+    Rd <<= Rn;
+    Rd >>= Rn;
+    Rd &= Rn;
+    Rd |= Rn;
+    Rd ^= Rn;
+}
