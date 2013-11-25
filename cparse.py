@@ -1023,11 +1023,15 @@ parser = yacc.yacc(method='LALR')
 #profile.run("yacc.yacc(method='LALR')")
 
 if __name__ == "__main__":
-    if len(sys.argv) != 2:
-        print("Usage: %s <input_file_name>" % sys.argv[0])
+    if len(sys.argv) != 3:
+        print("Usage: %s <input_file_name> <output_file_name>" % sys.argv[0])
         sys.exit(-1)
     with open(sys.argv[1], "r") as fIn:
         data = fIn.read()
+        translator.CodeEmitter.init(sys.argv[2])
+        translator.CodeEmitter.append(data)
+        translator.CodeEmitter.appendLine("")
+        translator.CodeEmitter.appendLine("**********************************")
         data = translator.preprocess(data)
-        result = parser.parse(data, debug=1)
-        print result
+        result = parser.parse(data, debug=0)
+        result.translate()
