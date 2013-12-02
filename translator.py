@@ -326,6 +326,10 @@ class Expression(object):
         raise UnhandledTranslationError
     def translate(self):
         raise UnhandledTranslationError
+    def reference(self):
+        raise UnhandledTranslationError
+    def dereference(self):
+        raise UnhandledTranslationError
 
 class Variable(Expression):
     def __init__(self, name, type=None):
@@ -358,7 +362,7 @@ class IntRegister(Variable):
 class IntConstantVariable(Variable):
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = translator->getImm64(this, %s);" % (value, self.name))
+        CodeEmitter.appendLine("Value *%s = translator::getImm(%s);" % (value, self.name))
         return TranslationResult(self.type, value)
 
 class NormalVariable(Variable):
@@ -588,8 +592,87 @@ class UnaryOperandExpression(Expression):
             s += self.operator
         s += ")"
         return s
+    # for '-'
+    def _translateNeg(self):
+        operandResult = self.operand.translate()
+        operandType = operandResult.type
+        resultName = Temp.getTempName()
+        if isinstance(operandType, IntType):
+            function = "CreateNeg"
+        elif isinstance(operandType, FloatType) or isinstance(operandType, DoubleType):
+            function = "CreateFNeg"
+        else:
+            raise UnhandledTranslationError
+        CodeEmitter.appendLine("Value *%s = builder->%s(%s);" % (resultName, function, operandResult.value))
+        return TranslationResult(operandType, resultName)
+
+    def _translateNot(self):
+        operandResult = self.operand.translate()
+        operandType = operandResult.type
+        assert isinstance(operandType, IntType)
+        resultName = Temp.getTempName()
+        allOne = "allone_%d" % Temp.getTempId()
+        typeName = operandType.getIRType()
+        CodeEmitter.appendLine("Value *%s = Constant::getAllOnesValue(%s);" % (allOne, typeName))
+        function = "CreateXor"
+        CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" %(resultName, function, operandResult.value, allOne))
+        return TranslationResult(operandType, resultName)
+
+    def _translateLNot(self):
+        operandResult = self.operand.translate()
+        operandType = operandResult.type
+        resultName = Temp.getTempName()
+        zero = "zero_%d" % Temp.getTempId()
+        if isinstance(operandType, IntType):
+            function = "CreateICmpEQ"
+            CodeEmitter.appendLine("Value *%s = translator::getImm%s(0);" % (zero, operandType.size))
+        elif isinstance(operandType, FloatType) or isinstance(operandType, DoubleType):
+            function = "CreateFCmpEQ"
+            CodeEmitter.appendLine("Value *%s = translator::getFp(0.0);" % zero)
+        else:
+            raise UnhandledTranslationError
+        CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" % (resultName, function, operandResult.value, zero))
+        return TranslationResult(IntType(size=1, isSigned=False), resultName)
+    # for '++', '--'
+    def _translateHelper(self, opType):
+        operandResult = self.operand.translate()
+        operandType = operandResult.type
+        one = "one_%d" % Temp.getTempId()
+        resultName = Temp.getTempName()
+        if isinstance(operandType, IntType):
+            function = "Create%s" % opType
+            CodeEmitter.appendLine("Value *%s = translator::getImm%d(1);" % (one, operandType.size))
+        elif isinstance(operandType, FloatType) or isinstance(operandType, DoubleType):
+            function = "CreateF%s" % opType
+            CodeEmitter.appendLine("Value *%s = translator::getFp(1.0);" % (one))
+        else:
+            raise UnhandledTranslationError
+        CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" % (resultName, function, operandResult.value, one))
+        result = TranslationResult(operandType, resultName)
+        self.operand.setValue(result)
+        if self.isPrefix:
+            return result
+        else:
+            return operandResult
     def translate(self):
-        raise UnhandledTranslationError
+        if self.operator == "-":
+            return self._translateNeg()
+        elif self.operator == "+":
+            return self.operand.translate()
+        elif self.operator == '~':
+            return self._translateNot()
+        elif self.operator == "!":
+            return self._translateLNot()
+        elif self.operator == "++":
+            return self._translateHelper("Add")
+        elif self.operator == "--":
+            return self._translateHelper("Sub")
+        elif self.operator == "&":
+            return self.operand.reference()
+        elif self.operator == "*":
+            return self.operand.dereference()
+        else:
+            raise UnhandledTranslationError
 
 class CastExpression(Expression):
     def __init__(self, targetType, originalExpression):
