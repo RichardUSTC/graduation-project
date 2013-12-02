@@ -197,7 +197,7 @@ class VoidType(Type):
         return typeName
 
 class IntType(Type):
-    def __init__(self, isSigned=True, size=struct.calcsize("i")):
+    def __init__(self, isSigned=True, size=struct.calcsize("i")*8):
         self.isSigned = isSigned
         self.size = size
     def __str__(self):
@@ -760,13 +760,13 @@ class IntConstant(Constant):
     def __init__(self, value):
         value = value.lower()
         isSigned = True
-        size = struct.calcsize("i")
+        size = struct.calcsize("i")*8
         suffix = value[-3:]
         if 'll' in suffix:
-            size = struct.calcsize("q")
+            size = struct.calcsize("q")*8
             j = j-2
         elif 'l' in suffix:
-            size = struct.calcsize("l")
+            size = struct.calcsize("l")*8
             j = j-1
         if 'u' in suffix:
             isSigned = False

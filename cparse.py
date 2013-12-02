@@ -9,6 +9,7 @@ import exceptions
 import clex
 import ply.yacc as yacc
 import translator
+import struct
 import pdb
 
 class UnhandledSyntaxError(Exception): pass
@@ -137,12 +138,12 @@ def p_type_specifier_1(t):
 def p_type_specifier_2(t):
     '''type_specifier : CHAR
                       | SIGNED CHAR'''
-    t[0] = translator.IntType(isSigned=True, size=8)
+    t[0] = translator.IntType(isSigned=True, size=struct.calcsize("c")*8)
 
 def p_type_specifier_3(t):
     '''type_specifier : SHORT
                       | SIGNED SHORT'''
-    t[0] = translator.IntType(isSigned=True, size=16)
+    t[0] = translator.IntType(isSigned=True, size=struct.calcsize("h")*8)
 
 def p_type_specifier_4(t):
     '''type_specifier : INT
@@ -154,15 +155,15 @@ def p_type_specifier_5(t):
     '''type_specifier : LONG
                       | SIGNED LONG
                       '''
-    t[0] = translator.IntType(isSigned=True, size=64)
+    t[0] = translator.IntType(isSigned=True, size=struct.calcsize("l")*8)
 
 def p_type_specifier_6(t):
     '''type_specifier : UNSIGNED CHAR'''
-    t[0] = translator.IntType(isSigned=False, size=8)
+    t[0] = translator.IntType(isSigned=False, size=struct.calcsize("b")*8)
 
 def p_type_specifier_7(t):
     '''type_specifier : UNSIGNED SHORT'''
-    t[0] = translator.IntType(isSigned=False, size=16)
+    t[0] = translator.IntType(isSigned=False, size=struct.calcsize("H")*8)
 
 def p_type_specifier_8(t):
     '''type_specifier : UNSIGNED INT'''
@@ -170,7 +171,7 @@ def p_type_specifier_8(t):
 
 def p_type_specifier_9(t):
     '''type_specifier : UNSIGNED LONG'''
-    t[0] = translator.IntType(isSigned=False, size=64)
+    t[0] = translator.IntType(isSigned=False, size=struct.calcsize("L")*8)
 
 def p_type_specifier_10(t):
     'type_specifier : SIGNED'
