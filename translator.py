@@ -140,7 +140,7 @@ class TypeCaster(object):
     @classmethod
     def integralPromotion(cls, input):
         if isinstance(input, IntType):
-            if input.type < IntType():
+            if input.type.compare(IntType()) < 0:
                 return cls.castTo(IntType(), input)
         return input
     @classmethod
@@ -152,7 +152,7 @@ class TypeCaster(object):
             result2 = cls.integralPromotion(result2)
             type1 = result1.type
             type2 = result2.type
-            if type1 > type2:
+            if type1.compare(type2) > 0:
                 newResult2 = cls.castTo(type1, result2)
                 return (result1, newResult2)
             else:
@@ -162,7 +162,7 @@ class TypeCaster(object):
             raise TypeCastError
     @classmethod
     def castTo(cls, targetType, input):
-        if targetType == input.type:
+        if targetType.compare(input.type) == 0:
             return input
         newValue = Temp.getTempName()
         typeName = targetType.getIRType()
@@ -183,7 +183,7 @@ class TypeCaster(object):
 class Type(object):
     def __repr__(self):
         return self.__str__()
-    def __cmp__(self, other):
+    def compare(self, other):
         raise TypeCompareError
     def getIRType(self):
         raise UnhandledTranslationError
@@ -206,7 +206,7 @@ class IntType(Type):
             s += 'u'
         s += "int%d_t" % self.size
         return s
-    def __cmp__(self, other):
+    def compare(self, other):
         if isinstance(other, FloatType) or isinstance(other, DoubleType):
             return -1
         elif isinstance(other, IntType):
@@ -237,7 +237,7 @@ class Twin64Type(Type):
 class FloatType(Type):
     def __str__(self):
         return 'float'
-    def __cmp__(self, other):
+    def compare(self, other):
         if isinstance(other, DoubleType):
             return -1
         elif isinstance(other, FloatType):
@@ -254,7 +254,7 @@ class FloatType(Type):
 class DoubleType(Type):
     def __str__(self):
         return 'double'
-    def __cmp__(self, other):
+    def compare(self, other):
         if isinstance(other, DoubleType):
             return 0
         elif isinstance(other, FloatType) or isinstance(other, IntType):
