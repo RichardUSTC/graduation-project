@@ -27,4 +27,12 @@
     Rd &= Rn;
     Rd |= Rn;
     Rd ^= Rn;
+    Rd = Rn++;
+    Rd = Rn--;
+    Rd = ++Rn;
+    Rd = --Rn;
+    Rd = ~Rn;
+    Rd = !Rn;
+    Rd = -Rn;
+    Rd = +Rn;
 }
