@@ -293,6 +293,11 @@ class PointerType(Type):
         for i in range(self.level):
             s += "*"
         return s
+    def getIRType(self):
+        baseTypeName = self.baseType.getIRType()
+        typeName = Temp.getTempName()
+        CodeEmitter.appendLine("PointerType *%s = %s->getPointerTo();" % (typeName, baseTypeName))
+        return typeName
 
 class StructOrUnionType(Type):
     structOrUnion = "unknown"
