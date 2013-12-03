@@ -204,7 +204,7 @@ class VoidType(Type):
         return 'void'
     def getIRType(self):
         typeName = Temp.getTempName()
-        CodeEmitter.appendLine("Type *%s = getVoidTy(context);" % typeName)
+        CodeEmitter.appendLine("Type *%s = Type::getVoidTy(context);" % typeName)
         return typeName
 
 class IntType(Type):
@@ -241,7 +241,7 @@ class IntType(Type):
             raise TypeCompareError
     def getIRType(self):
         typeName = Temp.getTempName()
-        CodeEmitter.appendLine("Type *%s = getIntNTy(context, %d);" % (typeName, self.size))
+        CodeEmitter.appendLine("Type *%s = Type::getIntNTy(context, %d);" % (typeName, self.size))
         return typeName
 
 class Twin64Type(Type):
@@ -262,7 +262,7 @@ class FloatType(Type):
             raise TypeCompareError
     def getIRType(self):
         typeName = Temp.getTempName()
-        CodeEmitter.appendLine("Type *%s = getFloatTy(context);" % (typeName))
+        CodeEmitter.appendLine("Type *%s = Type::getFloatTy(context);" % (typeName))
         return typeName
 
 class DoubleType(Type):
@@ -277,7 +277,7 @@ class DoubleType(Type):
             raise TypeCompareError
     def getIRType(self):
         typeName = Temp.getTempName()
-        CodeEmitter.appendLine("Type *%s = getDoubleTy(context);" % (typeName))
+        CodeEmitter.appendLine("Type *%s = Type::getDoubleTy(context);" % (typeName))
         return typeName
 
 class StructType(Type):
