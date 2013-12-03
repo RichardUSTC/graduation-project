@@ -175,6 +175,7 @@ class TypeCaster(object):
             raise TypeCastError
     @classmethod
     def castTo(cls, targetType, input):
+        assert isinstance(input, TranslationResult)
         if targetType.compare(input.type) == TypeCompareResult.EQ:
             return input
         newValue = Temp.getTempName()
@@ -327,7 +328,6 @@ class PointerType(Type):
                 return TypeCompareResult.INCOMPARABLE
         else:
             return TypeCompareResult.INCOMPARABLE
-
 
 class StructOrUnionType(Type):
     structOrUnion = "unknown"
@@ -977,8 +977,10 @@ class CompoundStatement(Statement):
     def translate(self):
         if self.statements != None:
             assert isinstance(self.statements, list)
+            symbolTable.push()
             for item in self.statements:
                 item.translate()
+            symbolTable.pop()
         return None
 
 predefinedTypeID = {
@@ -997,7 +999,8 @@ predefinedValues = {
     "Rd": IntRegister("Rd", IntType(True, 64)),
     "Rm": IntRegister("Rm", IntType(True, 64)),
     "Rn": IntRegister("Rn", IntType(True, 64)),
-    "SHIFT": IntConstantVariable("SHIFT", IntType(True, 64))
+    "SHIFT": IntConstantVariable("SHIFT", IntType(True, 64)),
+    "IMM6": IntConstantVariable("IMM6", IntType(True, 64))
     }
 
 class DictStack(list):
