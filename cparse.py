@@ -64,8 +64,7 @@ def p_function_definition_4(t):
 def p_declaration_1(t):
     'declaration : declaration_specifiers init_declarator_list SEMI'
     if isinstance(t[1], translator.Type):
-        t[0] = t[2]
-        for item in t[0]:
+        for item in t[2]:
             if item.type == None:
                 item.type = t[1]
             elif isinstance(item.type, translator.PointerType):
@@ -75,13 +74,15 @@ def p_declaration_1(t):
                     raise UnhandledSyntaxError
             else:
                 raise UnhandledSyntaxError
+        t[0] = translator.Declaration(t[2])
     else:
         raise UnhandledSyntaxError
 
 def p_declaration_2(t):
     'declaration : declaration_specifiers SEMI'
     if isinstance(t[1], translator.Type):
-        t[0] = translator.TypeDeclarator(t[1])
+        declarator = translator.TypeDeclarator(t[1])
+        t[0] = translator.Declaration([declarator])
     else:
         raise UnhandledSyntaxError
 

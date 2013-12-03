@@ -789,13 +789,7 @@ class StringConstant(Constant):
         self.type = PointerType(IntType(size=8, isSigned=True))
         self.value = value
 
-class Statement(object):
-    def __repr__(self):
-        return self.__str__()
-    def translate(self):
-        raise UnhandledTranslationError
-
-class Declarator(Statement): pass
+class Declarator(object): pass
 
 class VariableDeclarator(Declarator):
     def __init__(self, type=None, variable=None, initializer=None):
@@ -817,6 +811,27 @@ class TypeDeclarator(Declarator):
         self.type = type
     def __str__(self):
         return str(self.type)
+
+class Statement(object):
+    def __repr__(self):
+        return self.__str__()
+    def translate(self):
+        raise UnhandledTranslationError
+
+class Declaration(Statement):
+    def __init__(self, declarators):
+        assert isinstance(declarators, list)
+        self.declarators = declarators
+    def __str__(self):
+        s = ""
+        if self.declarators != None:
+            s = ",".join([str(declarator) for declarator in self.declarators])
+            s += ";"
+        return s
+    def translate(self):
+        if self.declarators != None:
+            for declarator in self.declarators:
+                declarator.translate()
 
 class ExpressionStatement(Statement):
     def __init__(self, expression):
