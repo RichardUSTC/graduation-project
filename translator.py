@@ -891,7 +891,7 @@ class ExpressionStatement(Statement):
         return None
 
 class IfStatement(Statement):
-    def __init__(self, condition=None, truePart=None, falsePart=None):
+    def __init__(self, condition, truePart=None, falsePart=None):
         self.condition = condition
         self.truePart = truePart
         self.falsePart = falsePart
@@ -910,6 +910,30 @@ class IfStatement(Statement):
             s += str(self.falsePart)
             s += "\n}"
         return s
+    def translate(self):
+        CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
+        branch = BranchGenerator()
+
+        branch.startCondition()
+        conditionResult = self.condition.translate()
+        conditionResult = TypeCaster.castTo(IntType(False, 1), conditionResult)
+        branch.setCondName(conditionResult.value)
+        branch.endCondition()
+
+        branch.startTruePart()
+        if self.truePart != None:
+            self.truePart.translate()
+        branch.endTruePart()
+
+        branch.startFalsePart()
+        if self.falsePart!= None:
+            self.falsePart.translate()
+        branch.endFalsePart()
+
+        branch.startExitPart()
+        branch.endExitPart()
+        return None
+
 
 class ForStatement(Statement):
     def __init__(self, preLoopPart=None, condition=None, postLoopBodyPart=None, loopBodyPart=None):
