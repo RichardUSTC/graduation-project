@@ -64,12 +64,16 @@ def p_function_definition_4(t):
 def p_declaration_1(t):
     'declaration : declaration_specifiers init_declarator_list SEMI'
     if isinstance(t[1], translator.Type):
-        for item in t[2]:
-            if item.type == None:
-                item.type = t[1]
-            elif isinstance(item.type, translator.PointerType):
-                if item.type.baseType == None:
-                    item.type.baseType = t[1]
+        for d in t[2]:
+            if isinstance(d, translator.VariableDeclarator):
+                item = d.variable
+                if item.type == None:
+                    item.type = t[1]
+                elif isinstance(item.type, translator.PointerType):
+                    if item.type.baseType == None:
+                        item.type.baseType = t[1]
+                    else:
+                        raise UnhandledSyntaxError
                 else:
                     raise UnhandledSyntaxError
             else:
@@ -369,7 +373,7 @@ def p_declarator_1(t):
     assert isinstance(t[1], translator.PointerType)
     if isinstance(t[2], translator.VariableDeclarator):
         t[0] = t[2]
-        t[0].type = t[1]
+        t[0].variable.type = t[1]
     else:
         raise UnhandledSyntaxError
 

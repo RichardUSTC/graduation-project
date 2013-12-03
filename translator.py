@@ -830,14 +830,11 @@ class StringConstant(Constant):
 class Declarator(object): pass
 
 class VariableDeclarator(Declarator):
-    def __init__(self, type=None, variable=None, initializer=None):
-        self.type = type
+    def __init__(self, variable=None, initializer=None):
         self.variable = variable
         self.initializer = initializer
     def __str__(self):
         s = ""
-        if self.type != None:
-            s += str(self.type)
         if self.variable != None:
             s += " " + str(self.variable)
         if self.initializer != None:
@@ -845,11 +842,11 @@ class VariableDeclarator(Declarator):
         return s
     def translate(self):
         CodeEmitter.appendLine("/* %s */" % str(self))
-        typeName = self.type.getIRType()
-        allocaName = "ptr_%s_%d" % (self.variable, Temp.getTempId())
+        typeName = self.variable.type.getIRType()
+        allocaName = "ptr_%s_%d" % (self.variable.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateAlloca(%s);" % (allocaName, typeName))
-        var = NormalVariable(self.variable, self.type, allocaName)
-        symbolTable.add(self.variable, var)
+        var = NormalVariable(self.variable.name, self.variable.type, allocaName)
+        symbolTable.add(self.variable.name, var)
         if self.initializer != None:
             result = self.initializer.translate()
             var.setValue(result)
