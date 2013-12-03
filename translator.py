@@ -65,7 +65,7 @@ class CodeEmitter(object):
             f.write(code+"\n")
 
 class BranchGenerator(object):
-    def __init__(self, condName):
+    def __init__(self, condName=None):
         self.state = "init"
         self.condName = condName
         self.trueBlockName = "trueBlock_%d" % Temp.getTempId()
@@ -74,12 +74,15 @@ class BranchGenerator(object):
         CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.trueBlockName);
         CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.falseBlockName);
         CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName);
+    def setCondName(self, condName):
+        self.condName = condName
     def startCondition(self):
         assert self.state == "init"
         self.state = "start condition"
     def endCondition(self):
         assert self.state == "start condition"
         self.state = "end condition"
+        assert self.condName != None
         CodeEmitter.appendLine("builder->CreateCondBr(%s, %s, %s);" % (self.condName, self.trueBlockName, self.falseBlockName))
     def startTruePart(self):
         assert self.state == "end condition"
