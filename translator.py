@@ -135,12 +135,17 @@ class TranslationResult(object):
 
 class TypeCompareError(Exception): pass
 class TypeCastError(Exception): pass
+class TypeCompareResult(object):
+    EQ = 0
+    LT = -1
+    GT = 1
+    INCOMPARABLE = 2
 
 class TypeCaster(object):
     @classmethod
     def integralPromotion(cls, input):
         if isinstance(input, IntType):
-            if input.type.compare(IntType()) < 0:
+            if input.type.compare(IntType()) == TypeCompareResult.LT:
                 return cls.castTo(IntType(), input)
         return input
     @classmethod
@@ -152,17 +157,21 @@ class TypeCaster(object):
             result2 = cls.integralPromotion(result2)
             type1 = result1.type
             type2 = result2.type
-            if type1.compare(type2) > 0:
+            if type1.compare(type2) == TypeCompareResult.EQ:
+                return (result1, result2)
+            elif type1.compare(type2) == TypeCompareResult.GT:
                 newResult2 = cls.castTo(type1, result2)
                 return (result1, newResult2)
-            else:
+            elif type1.compare(type2) == TypeCompareResult.LT:
                 newResult1 = cls.castTo(type2, result1)
                 return (newResult1, result2)
+            else:
+                raise TypeCastError
         except TypeCompareError:
             raise TypeCastError
     @classmethod
     def castTo(cls, targetType, input):
-        if targetType.compare(input.type) == 0:
+        if targetType.compare(input.type) == TypeCompareResult.EQ:
             return input
         newValue = Temp.getTempName()
         typeName = targetType.getIRType()
@@ -213,16 +222,19 @@ class IntType(Type):
             if self.size == other.size:
                 if self.isSigned:
                     if other.isSigned:
-                        return 0
+                        return TypeCompareResult.EQ
                     else:
-                        return -1
+                        return TypeCompareResult.LT
                 else:
                     if other.isSigned:
-                        return 1
+                        return TypeCompareResult.GT
                     else:
-                        return 0
+                        return TypeCompareResult.EQ
             else:
-                return self.size - other.size
+                if self.size - other.size > 0:
+                    return TypeCompareResult.GT
+                else:
+                    return TypeCompareResult.LT
         else:
             raise TypeCompareError
     def getIRType(self):
@@ -239,11 +251,11 @@ class FloatType(Type):
         return 'float'
     def compare(self, other):
         if isinstance(other, DoubleType):
-            return -1
+            return TypeCompareResult.LT
         elif isinstance(other, FloatType):
-            return 0
+            return TypeCompareResult.EQ
         elif isinstance(other, IntType):
-            return 1
+            return TypeCompareResult.GT
         else:
             raise TypeCompareError
     def getIRType(self):
@@ -256,9 +268,9 @@ class DoubleType(Type):
         return 'double'
     def compare(self, other):
         if isinstance(other, DoubleType):
-            return 0
+            return TypeCompareResult.EQ
         elif isinstance(other, FloatType) or isinstance(other, IntType):
-            return 1
+            return TypeCompareResult.GT
         else:
             raise TypeCompareError
     def getIRType(self):
