@@ -185,6 +185,8 @@ class TypeCaster(object):
             else:
                 isSigned = "false"
             CodeEmitter.appendLine("Value *%s = builder->CreateIntCast(%s, %s, %s);" % (newValue, input.value, typeName, isSigned))
+        elif isinstance(targetType, PointerType):
+            CodeEmitter.appendLine("Value *%s = builder->CreatePointerCast(%s, %s)" % (newValue, input.value, typeName))
         else:
             raise TypeCastError
         return TranslationResult(targetType, newValue)
@@ -307,9 +309,21 @@ class PointerType(Type):
         return s
     def getIRType(self):
         baseTypeName = self.baseType.getIRType()
-        typeName = Temp.getTempName()
-        CodeEmitter.appendLine("PointerType *%s = %s->getPointerTo();" % (typeName, baseTypeName))
+        for i in range(self.level):
+            typeName = Temp.getTempName()
+            CodeEmitter.appendLine("PointerType *%s = %s->getPointerTo();" % (typeName, baseTypeName))
+            baseTypeName = typeName
         return typeName
+    def compare(self, other):
+        if isinstance(other, PointerType):
+            compareResult = self.baseType.compare(other.baseType)
+            if compareResult == TypeCompareResult.EQ:
+                return TypeCompareResult.EQ
+            else:
+                return TypeCompareResult.INCOMPARABLE
+        else:
+            return TypeCompareResult.INCOMPARABLE
+
 
 class StructOrUnionType(Type):
     structOrUnion = "unknown"
