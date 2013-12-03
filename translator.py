@@ -781,6 +781,8 @@ class Constant(object):
         return self.value
     def __repr__(self):
         return self.__str__()
+    def translate(self):
+        raise UnhandledTranslationError
 
 class IntConstant(Constant):
     def __init__(self, value):
@@ -799,13 +801,21 @@ class IntConstant(Constant):
             j = j-1
         self.value = value
         self.type = IntType(isSigned, size)
+    def translate(self):
+        name = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = translator::getImm%d(%s);" % (name, self.type.size, self.value))
+        return TranslationResult(self.type, name)
 
 class FloatConstant(Constant):
     def __init__(self, value):
         self.type = FloatType()
         self.value = value
+    def translate(self):
+        name = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = translator::getFp(%s);" % (name, self.value))
+        return TranslationResult(self.type, name)
 
-class CharConstant(Constant):
+class CharConstant(IntConstant):
     def __init__(self, value):
         self.type = IntType(size=8, isSigned=True)
         self.value = value
