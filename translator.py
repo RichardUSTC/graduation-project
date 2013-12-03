@@ -1,6 +1,7 @@
 import exceptions
 import re
 import struct
+import pdb
 
 #####################################################################
 #
@@ -397,6 +398,7 @@ class NormalVariable(Variable):
         self.type = type
         self.allocaValue = allocaValue
     def setValue(self, result):
+        assert self.allocaValue != None
         newResult = TypeCaster.castTo(self.type, result)
         CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, self.allocaValue))
     def translate(self):
@@ -841,6 +843,16 @@ class VariableDeclarator(Declarator):
         if self.initializer != None:
             s += " = " + str(self.initializer)
         return s
+    def translate(self):
+        CodeEmitter.appendLine("/* %s */" % str(self))
+        typeName = self.type.getIRType()
+        allocaName = "ptr_%s_%d" % (self.variable, Temp.getTempId())
+        CodeEmitter.appendLine("Value *%s = builder->CreateAlloca(%s);" % (allocaName, typeName))
+        var = NormalVariable(self.variable, self.type, allocaName)
+        symbolTable.add(self.variable, var)
+        if self.initializer != None:
+            result = self.initializer.translate()
+            var.setValue(result)
 
 class TypeDeclarator(Declarator):
     def __init__(self, type=None):
