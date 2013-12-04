@@ -113,21 +113,29 @@ class BranchGenerator(object):
         CodeEmitter.appendLine("%s->addIncoming(%s, %s);" % (name, condTrueValue, self.trueBlockName))
         CodeEmitter.appendLine("%s->addIncoming(%s, %s);" % (name, condFalseValue, self.falseBlockName))
 
+class LoopType(object):
+    WHILE = 0
+    DO_WHILE = 1
+    FOR = 2
+
 class LoopGenerator(object):
-    def __init__(self, isDoWhile=False, condName=None):
-        self.isDoWhile = isDoWhile
+    def __init__(self, loopType, condName=None):
+        self.loopType = loopType
         self.state = "init"
         self.condName = condName
         self.condBlockName = "cond_block_%d" % Temp.getTempId()
         self.bodyBlockName = "body_block_%d" % Temp.getTempId()
         self.exitBlockName = "exit_block_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.condBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.bodyBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.condBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.bodyBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.exitBlockName)
+        if loopType == LoopType.FOR:
+            self.postLoopBodyBlockName = "post_body_block_%d" % Temp.getTempId()
+            CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.postLoopBodyBlockName)
     def setCondName(self, condName):
         self.condName = condName
     def startCondition(self):
-        if self.isDoWhile:
+        if self.loopType == LoopType.DO_WHILE:
             assert self.state == "end loop body"
         else:
             assert self.state == "init"
@@ -140,7 +148,7 @@ class LoopGenerator(object):
         assert self.condName != None
         CodeEmitter.appendLine("builder->CreateCondBr(%s, %s, %s);" % (self.condName, self.bodyBlockName, self.exitBlockName))
     def startLoopBody(self):
-        if self.isDoWhile:
+        if self.loopType == LoopType.DO_WHILE:
             assert self.state == "init"
             CodeEmitter.appendLine("builder->CreateBr(%s);" % self.bodyBlockName)
         else:
@@ -150,10 +158,24 @@ class LoopGenerator(object):
     def endLoopBody(self):
         assert self.state == "start loop body"
         self.state = "end loop body"
+        if self.loopType == LoopType.FOR:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.postLoopBodyBlockName)
+        else:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.condBlockName)
+    def startPostLoopBodyPart(self):
+        assert self.loopType == LoopType.FOR
+        assert self.state == "end loop body"
+        self.state = "start post loop body part"
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.postLoopBodyBlockName)
+    def endPostLoopBodyPart(self):
+        assert self.state == "start post loop body part"
+        self.state = "end post loop body part"
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.condBlockName)
     def startExitPart(self):
-        if self.isDoWhile:
+        if self.loopType == LoopType.DO_WHILE:
             assert self.state == "end condition"
+        elif self.loopType == LoopType.FOR:
+            assert self.state == "end post loop body part"
         else:
             assert self.state == "end loop body"
         self.state = "start exit part"
@@ -161,6 +183,16 @@ class LoopGenerator(object):
     def endExitPart(self):
         assert self.state == "start exit part"
         self.state = "end exit part"
+    def startBreak(self):
+        assert self.state == "start loop body"
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+    def endBreak(self):
+        pass
+    def startContinue(self):
+        assert self.state == "start loop body"
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.postLoopBodyBlockName)
+    def endContinue(self):
+        pass
 
 class Temp(object):
     i = 0
@@ -1020,7 +1052,8 @@ class ForStatement(Statement):
         if self.preLoopPart != None:
             self.preLoopPart.translate()
 
-        loop = LoopGenerator()
+        loop = LoopGenerator(LoopType.FOR)
+        loopOrSwitchStack.push(loop)
         loop.startCondition()
         if self.condition != None:
             conditionResult = self.condition.translate()
@@ -1035,12 +1068,16 @@ class ForStatement(Statement):
         loop.startLoopBody()
         if self.loopBodyPart != None:
             self.loopBodyPart.translate()
+        loop.endLoopBody()
+
+        loop.startPostLoopBodyPart()
         if self.postLoopBodyPart != None:
             self.postLoopBodyPart.translate()
-        loop.endLoopBody()
+        loop.endPostLoopBodyPart()
 
         loop.startExitPart()
         loop.endExitPart()
+        loopOrSwitchStack.pop()
 
         symbolTable.pop()
         typeIDTable.pop()
@@ -1067,10 +1104,23 @@ class CaseStatement(Statement):
 class BreakStatement(Statement):
     def __str__(self):
         return "break"
+    def translate(self):
+        loopOrSwitch = loopOrSwitchStack.top()
+        loopOrSwitch.startBreak()
+        loopOrSwitch.endBreak()
 
 class ContinueStatement(Statement):
     def __str__(self):
         return "continue"
+    def translate(self):
+        for i in range(0, len(loopOrSwitchStack), -1):
+            loop = loopOrSwitchStack[i]
+            if isinstance(loop, LoopGenerator):
+                break
+        else:
+            raise UnhandledTranslationError
+        loop.startContinue()
+        loop.endContinue()
 
 class SwitchStatement(Statement):
     def __init__(self, switcher, bodyPart):
@@ -1150,3 +1200,12 @@ typeIDTable.push()
 
 symbolTable = DictStack()
 symbolTable.push(predefinedValues)
+
+class Stack(list):
+    def push(self, item):
+        self.append(item)
+    def top(self):
+        return self[-1]
+# The stack will save the loops or swtiches being translated.
+# This stack is used while translating 'continue' and 'break'
+loopOrSwitchStack = Stack()
