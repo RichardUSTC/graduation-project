@@ -669,7 +669,7 @@ def p_iteration_statement_3(t):
 
 def p_iteration_statement_4(t):
     'iteration_statement : DO statement WHILE LPAREN expression RPAREN SEMI'
-    t[0] = translator.WhileStatement(t[5], t[2], isDoWhile=True)
+    t[0] = translator.DoWhileStatement(t[5], t[2])
 
 # jump_statement:
 

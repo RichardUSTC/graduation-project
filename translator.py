@@ -1084,11 +1084,18 @@ class ForStatement(Statement):
         return None
 
 class WhileStatement(Statement):
-    def __init__(self, condition, loopBodyPart, isDoWhile=False):
+    def __init__(self, condition, loopBodyPart):
         self.condition = condition
         self.loopBodyPart = loopBodyPart
     def __str__(self):
-        return "while(%s){\n%s\n}" % (str(self.condition), str(self.loopBodyPart))
+        return "while(%s){\n%s\n};" % (str(self.condition), str(self.loopBodyPart))
+
+class DoWhileStatement(Statement):
+    def __init__(self, condition, loopBodyPart):
+        self.condition = condition
+        self.loopBodyPart = loopBodyPart
+    def __str__(self):
+        return "do{\n%s\n}while(%s);" % (str(self.loopBodyPart), str(self.condition))
 
 class CaseStatement(Statement):
     def __init__(self, case=None, caseBody=None, isDefault=False):
