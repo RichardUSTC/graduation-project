@@ -1011,6 +1011,40 @@ class ForStatement(Statement):
             s += str(self.loopBodyPart)
         s += "\n}"
         return s
+    def translate(self):
+        symbolTable.push()
+        typeIDTable.push()
+
+        CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
+
+        if self.preLoopPart != None:
+            self.preLoopPart.translate()
+
+        loop = LoopGenerator()
+        loop.startCondition()
+        if self.condition != None:
+            conditionResult = self.condition.translate()
+            conditionResult = TypeCaster.castTo(IntType(False, 1), conditionResult)
+            loop.setCondName(conditionResult.value)
+        else:
+            one = "one_%d" % Temp.getTempId()
+            CodeEmitter.appendLine("Value *%s = translator::getImm1(1);" % one)
+            loop.setCondName(one)
+        loop.endCondition()
+
+        loop.startLoopBody()
+        if self.loopBodyPart != None:
+            self.loopBodyPart.translate()
+        if self.postLoopBodyPart != None:
+            self.postLoopBodyPart.translate()
+        loop.endLoopBody()
+
+        loop.startExitPart()
+        loop.endExitPart()
+
+        symbolTable.pop()
+        typeIDTable.pop()
+        return None
 
 class WhileStatement(Statement):
     def __init__(self, condition, loopBodyPart, isDoWhile=False):
