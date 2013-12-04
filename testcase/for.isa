@@ -1,5 +1,6 @@
 {
 	uint64_t scal=1;
+	uint32_t scale = 10;
 	for(uint32_t i = 0; i < scale; i++)
 	    scal = scal * 2;
 }
