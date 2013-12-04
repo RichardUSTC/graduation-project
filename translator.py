@@ -113,6 +113,54 @@ class BranchGenerator(object):
         CodeEmitter.appendLine("%s->addIncoming(%s, %s);" % (name, condTrueValue, self.trueBlockName))
         CodeEmitter.appendLine("%s->addIncoming(%s, %s);" % (name, condFalseValue, self.falseBlockName))
 
+class LoopGenerator(object):
+    def __init__(self, isDoWhile=False, condName=None):
+        self.isDoWhile = isDoWhile
+        self.state = "init"
+        self.condName = condName
+        self.condBlockName = "cond_block_%d" % Temp.getTempId()
+        self.bodyBlockName = "body_block_%d" % Temp.getTempId()
+        self.exitBlockName = "exit_block_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.condBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.bodyBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName)
+    def setCondName(self, condName):
+        self.condName = condName
+    def startCondition(self):
+        if self.isDoWhile:
+            assert self.state == "end loop body"
+        else:
+            assert self.state == "init"
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.condBlockName)
+        self.state = "start condition"
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.condBlockName)
+    def endCondition(self):
+        assert self.state == "start condition"
+        self.state = "end condition"
+        assert self.condName != None
+        CodeEmitter.appendLine("builder->CreateCondBr(%s, %s, %s);" % (self.condName, self.bodyBlockName, self.exitBlockName))
+    def startLoopBody(self):
+        if self.isDoWhile:
+            assert self.state == "init"
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.bodyBlockName)
+        else:
+            assert self.state == "end condition"
+        self.state = "start loop body"
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.bodyBlockName)
+    def endLoopBody(self):
+        assert self.state == "start loop body"
+        self.state = "end loop body"
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.condBlockName)
+    def startExitPart(self):
+        if self.isDoWhile:
+            assert self.state == "end condition"
+        else:
+            assert self.state == "end loop body"
+        self.state = "start exit part"
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.exitBlockName)
+    def endExitPart(self):
+        assert self.state == "start exit part"
+        self.state = "end exit part"
 
 class Temp(object):
     i = 0
