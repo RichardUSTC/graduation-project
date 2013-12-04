@@ -669,7 +669,7 @@ def p_iteration_statement_3(t):
 
 def p_iteration_statement_4(t):
     'iteration_statement : DO statement WHILE LPAREN expression RPAREN SEMI'
-    raise UnhandledSyntaxError
+    t[0] = translator.WhileStatement(t[5], t[2], isDoWhile=True)
 
 # jump_statement:
 
