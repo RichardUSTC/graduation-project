@@ -1089,6 +1089,33 @@ class WhileStatement(Statement):
         self.loopBodyPart = loopBodyPart
     def __str__(self):
         return "while(%s){\n%s\n};" % (str(self.condition), str(self.loopBodyPart))
+    def translate(self):
+        symbolTable.push()
+        typeIDTable.push()
+
+        CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
+        loop = LoopGenerator(LoopType.WHILE)
+        loopOrSwitchStack.push(loop)
+
+        assert self.condition != None
+        loop.startCondition()
+        conditionResult = self.condition.translate()
+        conditionResult = TypeCaster.castTo(IntType(False, 1), conditionResult)
+        loop.setCondName(conditionResult.value)
+        loop.endCondition()
+
+        loop.startLoopBody()
+        if self.loopBodyPart != None:
+            self.loopBodyPart.translate()
+        loop.endLoopBody()
+
+        loop.startExitPart()
+        loop.endExitPart()
+        loopOrSwitchStack.pop()
+
+        symbolTable.pop()
+        typeIDTable.pop()
+        return None
 
 class DoWhileStatement(Statement):
     def __init__(self, condition, loopBodyPart):
@@ -1096,6 +1123,33 @@ class DoWhileStatement(Statement):
         self.loopBodyPart = loopBodyPart
     def __str__(self):
         return "do{\n%s\n}while(%s);" % (str(self.loopBodyPart), str(self.condition))
+    def translate(self):
+        symbolTable.push()
+        typeIDTable.push()
+
+        CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
+        loop = LoopGenerator(LoopType.DO_WHILE)
+        loopOrSwitchStack.push(loop)
+
+        loop.startLoopBody()
+        if self.loopBodyPart != None:
+            self.loopBodyPart.translate()
+        loop.endLoopBody()
+
+        assert self.condition != None
+        loop.startCondition()
+        conditionResult = self.condition.translate()
+        conditionResult = TypeCaster.castTo(IntType(False, 1), conditionResult)
+        loop.setCondName(conditionResult.value)
+        loop.endCondition()
+
+        loop.startExitPart()
+        loop.endExitPart()
+        loopOrSwitchStack.pop()
+
+        symbolTable.pop()
+        typeIDTable.pop()
+        return None
 
 class CaseStatement(Statement):
     def __init__(self, case=None, caseBody=None, isDefault=False):
