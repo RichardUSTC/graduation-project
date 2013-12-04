@@ -686,6 +686,7 @@ class UnaryOperandExpression(Expression):
         else:
             return operandResult
     def translate(self):
+        CodeEmitter.appendLine("/* %s */" % str(self))
         if self.operator == "-":
             return self._translateNeg()
         elif self.operator == "+":
@@ -944,7 +945,8 @@ class ForStatement(Statement):
         s = "for("
         if self.preLoopPart != None:
             s += str(self.preLoopPart)
-        s += ";"
+        if not isinstance(self.preLoopPart, Declaration):
+            s += ";"
         if self.condition != None:
             s += str(self.condition)
         s += ";"
@@ -957,7 +959,7 @@ class ForStatement(Statement):
         return s
 
 class WhileStatement(Statement):
-    def __init__(self, condition, loopBodyPart):
+    def __init__(self, condition, loopBodyPart, isDoWhile=False):
         self.condition = condition
         self.loopBodyPart = loopBodyPart
     def __str__(self):
@@ -1001,9 +1003,11 @@ class CompoundStatement(Statement):
         if self.statements != None:
             assert isinstance(self.statements, list)
             symbolTable.push()
+            typeIDTable.push()
             for item in self.statements:
                 item.translate()
             symbolTable.pop()
+            typeIDTable.pop()
         return None
 
 predefinedTypeID = {
