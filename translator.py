@@ -299,6 +299,10 @@ class TypeIDType(Type):
         self.typeID = typeID
     def __str__(self):
         return self.typeID
+    def getActualType(self):
+        t = typeIDTable.get(self.typeID)
+        assert t != None
+        return t
 
 class PointerType(Type):
     def __init__(self, baseType=None, level=1):
@@ -846,6 +850,8 @@ class VariableDeclarator(Declarator):
         return s
     def translate(self):
         CodeEmitter.appendLine("/* %s */" % str(self))
+        if isinstance(self.variable.type, TypeIDType):
+            self.variable.type = self.variable.type.getActualType()
         typeName = self.variable.type.getIRType()
         allocaName = "ptr_%s_%d" % (self.variable.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateAlloca(%s);" % (allocaName, typeName))
