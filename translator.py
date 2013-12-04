@@ -1068,6 +1068,10 @@ class BreakStatement(Statement):
     def __str__(self):
         return "break"
 
+class ContinueStatement(Statement):
+    def __str__(self):
+        return "continue"
+
 class SwitchStatement(Statement):
     def __init__(self, switcher, bodyPart):
         self.switcher = switcher

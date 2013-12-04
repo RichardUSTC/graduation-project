@@ -679,7 +679,7 @@ def p_jump_statement_1(t):
 
 def p_jump_statement_2(t):
     'jump_statement : CONTINUE SEMI'
-    raise UnhandledSyntaxError
+    t[0] = translator.ContinueStatement()
 
 def p_jump_statement_3(t):
     'jump_statement : BREAK SEMI'
