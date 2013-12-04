@@ -71,9 +71,9 @@ class BranchGenerator(object):
         self.trueBlockName = "trueBlock_%d" % Temp.getTempId()
         self.falseBlockName = "falseBlock_%d" % Temp.getTempId()
         self.exitBlockName = "exitBlock_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.trueBlockName);
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.falseBlockName);
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName);
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.trueBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.falseBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName)
     def setCondName(self, condName):
         self.condName = condName
     def startCondition(self):
@@ -131,7 +131,7 @@ class Temp(object):
 class TranslationResult(object):
     def __init__(self, type, value):
         self.type = type
-        self.value = value;
+        self.value = value
     def __str__(self):
         return "%s:%s" % (str(self.value), str(self.type))
     def __repr__(self):
@@ -529,8 +529,8 @@ class BinaryOperandExpression(Expression):
             
             branch.startExitPart()
             resultType = IntType(isSigned=False, size=1)
-            branch.addPhi(resultName, resultType.getIRType(), leftBoolValue, rightBoolValue);
-            branch.endExitPart();
+            branch.addPhi(resultName, resultType.getIRType(), leftBoolValue, rightBoolValue)
+            branch.endExitPart()
             return TranslationResult(resultType, resultName)
         elif self.operator == "&&":
             resultName = Temp.getTempName()
@@ -559,8 +559,8 @@ class BinaryOperandExpression(Expression):
             
             branch.startExitPart()
             resultType = IntType(isSigned=False, size=1)
-            branch.addPhi(resultName, resultType.getIRType(), rightBoolValue, leftBoolValue);
-            branch.endExitPart();
+            branch.addPhi(resultName, resultType.getIRType(), rightBoolValue, leftBoolValue)
+            branch.endExitPart()
             return TranslationResult(resultType, resultName)
         elif self.operator == "<":
             return self._translateHelper3("LT")
@@ -933,7 +933,6 @@ class IfStatement(Statement):
         branch.startExitPart()
         branch.endExitPart()
         return None
-
 
 class ForStatement(Statement):
     def __init__(self, preLoopPart=None, condition=None, postLoopBodyPart=None, loopBodyPart=None):
