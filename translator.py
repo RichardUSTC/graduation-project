@@ -1336,11 +1336,27 @@ typeIDTable.push()
 symbolTable = DictStack()
 symbolTable.push(predefinedValues)
 
-class Stack(list):
+# The stack will save the loops or swtiches being translated.
+# This stack is used while translating 'continue', 'break' and 'case'
+class LoopOrSwitchStack(list):
     def push(self, item):
+        assert isinstance(item, LoopGenerator) or isinstance(item, SwitchGenerator)
         self.append(item)
     def top(self):
         return self[-1]
-# The stack will save the loops or swtiches being translated.
-# This stack is used while translating 'continue' and 'break'
-loopOrSwitchStack = Stack()
+    def getInnermostLoop(self):
+        for i in range(len(loopOrSwitchStack)-1, -1, -1):
+            loop = loopOrSwitchStack[i]
+            if isinstance(loop, LoopGenerator):
+                return loop
+        else:
+            raise UnhandledTranslationError
+    def getInnermostSwitch(self):
+        for i in range(len(loopOrSwitchStack)-1, -1, -1):
+            switch = loopOrSwitchStack[i]
+            if isinstance(switch, SwitchGenerator):
+                return switch
+        else:
+            raise UnhandledTranslationError
+
+loopOrSwitchStack = LoopOrSwitchStack()
