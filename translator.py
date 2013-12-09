@@ -1229,17 +1229,31 @@ class CaseStatement(Statement):
         self. caseBody = caseBody
     def __str__(self):
         return "case %s: %s" %(str(self.case), str(self.caseBody))
+    def translate(self):
+        CodeEmitter.appendLine("/* %s */" % str(self))
+        switch = loopOrSwitchStack.getInnermostSwitch()
+        switch.addCase(self.case)
+        if self.caseBody != None:
+            self.caseBody.translate()
 
 class DefaultStatement(Statement):
     def __init__(self, body=None):
         self.body = body
     def __str__(self):
         return "default: %s" % (str(self.body))
+    def translate(self):
+        CodeEmitter.appendLine("/* %s */" % str(self))
+        switch = loopOrSwitchStack.getInnermostSwitch()
+        switch.addDefault()
+        if self.body != None:
+            self.body.translate()
+
 
 class BreakStatement(Statement):
     def __str__(self):
-        return "break"
+        return "break;"
     def translate(self):
+        CodeEmitter.appendLine("/* break */")
         loopOrSwitch = loopOrSwitchStack.top()
         loopOrSwitch.startBreak()
         loopOrSwitch.endBreak()
@@ -1254,11 +1268,27 @@ class ContinueStatement(Statement):
         loop.endContinue()
 
 class SwitchStatement(Statement):
-    def __init__(self, switcher, bodyPart):
-        self.switcher = switcher
+    def __init__(self, control, bodyPart):
+        self.control = control
         self.bodyPart = bodyPart
     def __str__(self):
-        return "switch(%s) {\n%s\n}" % (str(self.switcher), str(self.bodyPart))
+        return "switch(%s) {\n%s\n}" % (str(self.control), str(self.bodyPart))
+    def translate(self):
+        assert self.control != None
+        CodeEmitter.appendLine("/* %s */" % (str(self)))
+        symbolTable.push()
+        typeIDTable.push()
+        controlResult = self.control.translate()
+        switch = SwitchGenerator(controlResult)
+        loopOrSwitchStack.push(switch)
+        switch.startSwtich()
+        if self.bodyPart != None:
+            self.bodyPart.translate()
+        switch.endSwitch()
+        loopOrSwitchStack.pop()
+        symbolTable.pop()
+        typeIDTable.pop()
+
 
 class CompoundStatement(Statement):
     def __init__(self, statements=None):
