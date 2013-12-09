@@ -1151,16 +1151,19 @@ class DoWhileStatement(Statement):
         typeIDTable.pop()
         return None
 
+# Note: caseBody is only the first statement of this 'case'
 class CaseStatement(Statement):
-    def __init__(self, case=None, caseBody=None, isDefault=False):
-        self.isDefault = isDefault
+    def __init__(self, case, caseBody=None):
         self.case = case
         self. caseBody = caseBody
     def __str__(self):
-        if self.isDefault:
-            return "default: %s" % (str(self.caseBody))
-        else:
-            return "case %s: %s" %(str(self.case), str(self.caseBody))
+        return "case %s: %s" %(str(self.case), str(self.caseBody))
+
+class DefaultStatement(Statement):
+    def __init__(self, body=None):
+        self.body = body
+    def __str__(self):
+        return "default: %s" % (str(self.body))
 
 class BreakStatement(Statement):
     def __str__(self):

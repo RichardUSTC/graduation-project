@@ -599,7 +599,7 @@ def p_labeled_statement_2(t):
 
 def p_labeled_statement_3(t):
     'labeled_statement : DEFAULT COLON statement'
-    t[0] = translator.CaseStatement(isDefault=True, caseBody=t[3])
+    t[0] = translator.DefaultStatement(body=t[3])
 
 # expression-statement:
 def p_expression_statement(t):
