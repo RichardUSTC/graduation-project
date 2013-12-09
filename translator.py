@@ -194,6 +194,77 @@ class LoopGenerator(object):
     def endContinue(self):
         pass
 
+class SwitchGenerator(object):
+    def __init__(self, control):
+        assert isinstance(control, TranslationResult)
+        self.control = control
+        self.exitBlockName = "exit_block_%d" % Temp.getTempId()
+        self.nextCaseBlockName = "case_block_%d" % Temp.getTempId()
+        self.nextCaseBodyBlockName = self.nextCaseBlockName + "_body"
+        self.defaultBodyBlockName = None
+        self.state = "init"
+        self.isDefaultAtLast = False
+    def startSwtich(self):
+        assert self.state == "init"
+        self.state = "in switch"
+        if not isinstance(self.control.type, IntType):
+            self.control = TypeCaster.castTo(IntType(True, 64), self.control)
+        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.nextCaseBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.exitBlockName)
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.nextCaseBlockName)
+    def startBreak(self):
+        assert self.state == "in switch"
+        self.state = "in break"
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        pass
+    def endBreak(self):
+        assert self.state == "in break"
+        self.state = "in switch"
+        pass
+    def addCase(self, case):
+        assert self.state == "in switch"
+        assert isinstance(case, Constant)
+
+        caseBlockName = self.nextCaseBlockName
+        caseBodyBlockName = self.nextCaseBodyBlockName
+        self.nextCaseBlockName = "case_block_%d" % Temp.getTempId()
+        self.nextCaseBodyBlockName = self.nextCaseBlockName + "_body"
+
+        #Jump to the body of this case. If the previous case body has 'break', this 'br' instruction will be eliminated by LLVM
+        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % caseBodyBlockName)
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % caseBodyBlockName)
+
+        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.nextCaseBlockName)
+
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % caseBlockName)
+        caseResult = case.translate()
+        newCaseResult = TypeCaster.castTo(self.control.type, caseResult)
+        isEqual = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = builder->CreateICmpEQ(%s, %s);" % (isEqual, self.control.value, newCaseResult.value))
+        CodeEmitter.appendLine("builder->CreateCondBr(%s, %s, %s);" % (isEqual, caseBodyBlockName, self.nextCaseBlockName))
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % caseBodyBlockName)
+
+    def addDefault(self):
+        assert self.state == "in switch"
+        self.defaultBodyBlockName = "default_body_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.defaultBodyBlockName)
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.defaultBodyBlockName)
+
+    def endSwitch(self):
+        assert self.state == "in switch"
+        self.state = "out of switch"
+
+        # let the last case body jump to exit
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.nextCaseBlockName)
+        if self.defaultBodyBlockName != None:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
+        else:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.exitBlockName)
+
+
 class Temp(object):
     i = 0
     @classmethod
