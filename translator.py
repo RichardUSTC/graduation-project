@@ -1246,14 +1246,10 @@ class BreakStatement(Statement):
 
 class ContinueStatement(Statement):
     def __str__(self):
-        return "continue"
+        return "continue;"
     def translate(self):
-        for i in range(0, len(loopOrSwitchStack), -1):
-            loop = loopOrSwitchStack[i]
-            if isinstance(loop, LoopGenerator):
-                break
-        else:
-            raise UnhandledTranslationError
+        CodeEmitter.appendLine("/* continue */")
+        loop = loopOrSwitchStack.getInnermostLoop()
         loop.startContinue()
         loop.endContinue()
 
