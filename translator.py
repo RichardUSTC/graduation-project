@@ -264,7 +264,6 @@ class SwitchGenerator(object):
             CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.exitBlockName)
 
-
 class Temp(object):
     i = 0
     @classmethod
@@ -565,7 +564,6 @@ class NormalVariable(Variable):
         CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (value, self.allocaValue))
         return TranslationResult(self.type, value)
 
-
 class BinaryOperandExpression(Expression):
     def __init__(self, left, operator, right):
         self.left = left
@@ -573,7 +571,7 @@ class BinaryOperandExpression(Expression):
         self.operator = operator
     def __str__(self):
         return "(%s %s %s)" % (str(self.left), self.operator, str(self.right))
-    
+
     # for '+' '-' '*' '/' '%'
     def _translateHelper1(self, opType, intSignSensitive=False):
         leftResult = self.left.translate()
@@ -666,11 +664,11 @@ class BinaryOperandExpression(Expression):
             CodeEmitter.appendLine("Value *%s = translator::getImm%d(0);" % (zero, leftResult.type.size))
             leftBoolValue = Temp.getTempName()
             CodeEmitter.appendLine("Value *%s = builder->CreateICmpNE(%s, %s);" % (leftBoolValue, leftResult.value, zero))
-            
+
             branch = BranchGenerator(leftBoolValue)
             branch.startCondition()
             branch.endCondition()
-            
+
             branch.startTruePart()
             branch.endTruePart()
 
@@ -681,7 +679,7 @@ class BinaryOperandExpression(Expression):
             rightBoolValue = Temp.getTempName()
             CodeEmitter.appendLine("Value *%s = builder->CreateICmpNE(%s, %s);" % (rightBoolValue, rightResult.value, zero))
             branch.endFalsePart()
-            
+
             branch.startExitPart()
             resultType = IntType(isSigned=False, size=1)
             branch.addPhi(resultName, resultType.getIRType(), leftBoolValue, rightBoolValue)
@@ -696,11 +694,11 @@ class BinaryOperandExpression(Expression):
             CodeEmitter.appendLine("Value *%s = translator::getImm%d(0);" % (zero, leftResult.type.size))
             leftBoolValue = Temp.getTempName()
             CodeEmitter.appendLine("Value *%s = builder->CreateICmpNE(%s, %s);" % (leftBoolValue, leftResult.value, zero))
-            
+
             branch = BranchGenerator(leftBoolValue)
             branch.startCondition()
             branch.endCondition()
-            
+
             branch.startTruePart()
             rightResult = self.right.translate()
             if not isinstance(rightResult.type, IntType):
@@ -711,7 +709,7 @@ class BinaryOperandExpression(Expression):
 
             branch.startFalsePart()
             branch.endFalsePart()
-            
+
             branch.startExitPart()
             resultType = IntType(isSigned=False, size=1)
             branch.addPhi(resultName, resultType.getIRType(), rightBoolValue, leftBoolValue)
@@ -761,7 +759,6 @@ class BinaryOperandExpression(Expression):
             self.left.setValue(result)
         else:
             raise UnhandledTranslationError
-
 
 class UnaryOperandExpression(Expression):
     def __init__(self, operand, operator, isPrefix):
@@ -1248,7 +1245,6 @@ class DefaultStatement(Statement):
         if self.body != None:
             self.body.translate()
 
-
 class BreakStatement(Statement):
     def __str__(self):
         return "break;"
@@ -1288,7 +1284,6 @@ class SwitchStatement(Statement):
         loopOrSwitchStack.pop()
         symbolTable.pop()
         typeIDTable.pop()
-
 
 class CompoundStatement(Statement):
     def __init__(self, statements=None):
