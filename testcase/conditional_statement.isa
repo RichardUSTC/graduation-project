@@ -1,0 +1,5 @@
+{
+    int x = 1;
+    short y=0;
+    int z = (x==1)?Rd:y;
+}
