@@ -65,8 +65,9 @@ class CodeEmitter(object):
             f.write(code+"\n")
 
 class BranchGenerator(object):
-    def __init__(self, condName=None):
+    def __init__(self, condName=None, mayAppend=False):
         self.state = "init"
+        self.mayAppend = mayAppend
         self.condName = condName
         self.trueBlockName = "trueBlock_%d" % Temp.getTempId()
         self.falseBlockName = "falseBlock_%d" % Temp.getTempId()
@@ -76,6 +77,8 @@ class BranchGenerator(object):
         CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName)
     def setCondName(self, condName):
         self.condName = condName
+    def setMayAppend(self, mayAppend):
+        self.mayAppend = mayAppend
     def startCondition(self):
         assert self.state == "init"
         self.state = "start condition"
@@ -91,6 +94,9 @@ class BranchGenerator(object):
     def endTruePart(self):
         assert self.state == "start true part"
         self.state = "end true part"
+        if self.mayAppend:
+            self.truePartIP = "insert_point_of_true_%d" % Temp.getTempId()
+            CodeEmitter.appendLine("IRBuilder<>::InsertPoint %s = builder->saveIP();" % self.truePartIP)
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
     def startFalsePart(self):
         assert self.state == "end true part"
@@ -99,7 +105,30 @@ class BranchGenerator(object):
     def endFalsePart(self):
         assert self.state == "start false part"
         self.state = "end false part"
+        if self.mayAppend:
+            self.falsePartIP = "insert_point_of_false_%d" % Temp.getTempId()
+            CodeEmitter.appendLine("IRBuilder<>::InsertPoint %s = builder->saveIP();" % self.falsePartIP)
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+    def startAppendToTruePart(self):
+        assert self.state == "end false part"
+        self.state = "start append to true part"
+        self.IP = "insert_point_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("IRBuilder<>::InsertPoint %s = builder->saveIP();" % self.IP)
+        CodeEmitter.appendLine("builder->RestoreIP(%s);" % self.truePartIP)
+    def endAppendToTruePart(self):
+        assert self.state == "start append to true part"
+        self.state = "end false part"
+        CodeEmitter.appendLine("builder->RestoreIP(%s);" % self.IP)
+    def startAppendToFalsePart(self):
+        assert self.state == "end false part"
+        self.state = "start append to false part"
+        self.IP = "insert_point_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("IRBuilder<>::InsertPoint %s = builder->saveIP();" % self.IP)
+        CodeEmitter.appendLine("builder->RestoreIP(%s);" % self.falsePartIP)
+    def endAppendToFalsePart(self):
+        assert self.state == "start append to false part"
+        self.state = "end false part"
+        CodeEmitter.appendLine("builder->RestoreIP(%s);" % self.IP)
     def startExitPart(self):
         assert self.state == "end false part"
         self.state = "start exit part"
@@ -361,6 +390,11 @@ class VoidType(Type):
         typeName = Temp.getTempName()
         CodeEmitter.appendLine("Type *%s = Type::getVoidTy(context);" % typeName)
         return typeName
+    def compare(self, other):
+        if isinstance(other, VoidType):
+            return TypeCompareResult.EQ
+        else:
+            return TypeCompareResult.INCOMPARABLE
 
 class IntType(Type):
     def __init__(self, isSigned=True, size=struct.calcsize("i")*8):
@@ -875,7 +909,41 @@ class ConditionalExpression(Expression):
     def __str__(self):
         return "(%s)?(%s):(%s)" % (str(self.condition), str(self.truePart), str(self.falsePart))
     def translate(self):
-        raise UnhandledTranslationError
+        branch = BranchGenerator(mayAppend=True)
+        branch.startCondition()
+        condResult = self.condition.translate()
+        condResult = TypeCaster.castTo(IntType(False, 1), condResult)
+        branch.setCondName(condResult.value)
+        branch.endCondition()
+
+        branch.startTruePart()
+        trueResult = self.truePart.translate()
+        branch.endTruePart()
+
+        branch.startFalsePart()
+        falseResult = self.falsePart.translate()
+        branch.endFalsePart()
+
+        compareResult = trueResult.type.compare(falseResult.type)
+        if compareResult == TypeCompareResult.EQ:
+            pass
+        elif compareResult == TypeCompareResult.LT:
+            branch.startAppendToTruePart()
+            trueResult = TypeCaster.castTo(falseResult.type, trueResult)
+            branch.endAppendToTruePart()
+        elif compareResult == TypeCompareResult.GT:
+            branch.startAppendToFalsePart()
+            falseResult = TypeCaster.castTo(trueResult.type, falseResult)
+            branch.endAppendToFalsePart()
+        else:
+            raise UnhandledTranslationError
+
+        branch.startExitPart()
+        resultName = Temp.getTempName()
+        resultType = trueResult.type
+        resultIRType = resultType.getIRType()
+        branch.addPhi(resultName, resultIRType, trueResult.value, falseResult.value)
+        return TranslationResult(resultType, resultName)
 
 class FunctionCallExpression(Expression):
     def __init__(self, function, arguments):
