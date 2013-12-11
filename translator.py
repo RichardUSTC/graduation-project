@@ -556,13 +556,13 @@ class Variable(Expression):
     def __str__(self):
         return self.name
     def setValue(self, result):
-        v = symbolTable.get(self.name)
+        v = variableTable.get(self.name)
         if v != None:
             v.setValue(result)
         else:
             raise UnhandledTranslationError
     def translate(self):
-        v = symbolTable.get(self.name)
+        v = variableTable.get(self.name)
         if v != None:
             return v.translate()
         else:
@@ -1072,7 +1072,7 @@ class VariableDeclarator(Declarator):
         allocaName = "ptr_%s_%d" % (self.variable.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateAlloca(%s);" % (allocaName, typeName))
         var = NormalVariable(self.variable.name, self.variable.type, allocaName)
-        symbolTable.add(self.variable.name, var)
+        variableTable.add(self.variable.name, var)
         if self.initializer != None:
             result = self.initializer.translate()
             var.setValue(result)
@@ -1180,7 +1180,7 @@ class ForStatement(Statement):
         s += "\n}"
         return s
     def translate(self):
-        symbolTable.push()
+        variableTable.push()
         typeIDTable.push()
 
         CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
@@ -1215,7 +1215,7 @@ class ForStatement(Statement):
         loop.endExitPart()
         loopOrSwitchStack.pop()
 
-        symbolTable.pop()
+        variableTable.pop()
         typeIDTable.pop()
         return None
 
@@ -1226,7 +1226,7 @@ class WhileStatement(Statement):
     def __str__(self):
         return "while(%s){\n%s\n};" % (str(self.condition), str(self.loopBodyPart))
     def translate(self):
-        symbolTable.push()
+        variableTable.push()
         typeIDTable.push()
 
         CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
@@ -1249,7 +1249,7 @@ class WhileStatement(Statement):
         loop.endExitPart()
         loopOrSwitchStack.pop()
 
-        symbolTable.pop()
+        variableTable.pop()
         typeIDTable.pop()
         return None
 
@@ -1260,7 +1260,7 @@ class DoWhileStatement(Statement):
     def __str__(self):
         return "do{\n%s\n}while(%s);" % (str(self.loopBodyPart), str(self.condition))
     def translate(self):
-        symbolTable.push()
+        variableTable.push()
         typeIDTable.push()
 
         CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
@@ -1283,7 +1283,7 @@ class DoWhileStatement(Statement):
         loop.endExitPart()
         loopOrSwitchStack.pop()
 
-        symbolTable.pop()
+        variableTable.pop()
         typeIDTable.pop()
         return None
 
@@ -1340,7 +1340,7 @@ class SwitchStatement(Statement):
     def translate(self):
         assert self.control != None
         CodeEmitter.appendLine("/* %s */" % (str(self)))
-        symbolTable.push()
+        variableTable.push()
         typeIDTable.push()
         controlResult = self.control.translate()
         switch = SwitchGenerator(controlResult)
@@ -1350,7 +1350,7 @@ class SwitchStatement(Statement):
             self.bodyPart.translate()
         switch.endSwitch()
         loopOrSwitchStack.pop()
-        symbolTable.pop()
+        variableTable.pop()
         typeIDTable.pop()
 
 class CompoundStatement(Statement):
@@ -1368,11 +1368,11 @@ class CompoundStatement(Statement):
     def translate(self):
         if self.statements != None:
             assert isinstance(self.statements, list)
-            symbolTable.push()
+            variableTable.push()
             typeIDTable.push()
             for item in self.statements:
                 item.translate()
-            symbolTable.pop()
+            variableTable.pop()
             typeIDTable.pop()
         return None
 
@@ -1422,8 +1422,8 @@ typeIDTable = DictStack()
 typeIDTable.push(predefinedTypeID)
 typeIDTable.push()
 
-symbolTable = DictStack()
-symbolTable.push(predefinedValues)
+variableTable = DictStack()
+variableTable.push(predefinedValues)
 
 # The stack will save the loops or swtiches being translated.
 # This stack is used while translating 'continue', 'break' and 'case'
