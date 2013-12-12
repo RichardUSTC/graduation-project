@@ -218,7 +218,7 @@ def p_struct_or_union_specifier_1(t):
     t[0] = t[1]
     t[0].name = t[2]
     t[0].definition = t[4]
-    translator.typeIDTable.add(t[2], t[0])
+    translator.tempTypeIDTable.add(t[2], t[0])
 
 def p_struct_or_union_specifier_2(t):
     'struct_or_union_specifier : struct_or_union LBRACE struct_declaration_list RBRACE'

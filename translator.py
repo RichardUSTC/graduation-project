@@ -1425,7 +1425,11 @@ class DictStack(list):
 
 typeIDTable = DictStack()
 typeIDTable.push(predefinedTypeID)
-typeIDTable.push()
+
+# This table is only used to identify TYPEID during lexing and parsing.
+tempTypeIDTable = DictStack()
+tempTypeIDTable.push(predefinedTypeID)
+tempTypeIDTable.push()
 
 variableTable = DictStack()
 variableTable.push(predefinedValues)
