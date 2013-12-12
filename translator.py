@@ -469,12 +469,6 @@ class DoubleType(Type):
         CodeEmitter.appendLine("Type *%s = Type::getDoubleTy(context);" % (typeName))
         return typeName
 
-class StructType(Type):
-    pass
-
-class UnionType(Type):
-    pass
-
 class EnumType(IntType):
     pass
 
@@ -528,7 +522,9 @@ class StructOrUnionType(Type):
             s += self.name
         if self.definition != None:
             s += "{\n"
-            s += str(self.definition)
+            for item in self.definition:
+                s += str(item)
+                s += ";\n"
             s += "\n}"
         return s
 class StructType(StructOrUnionType):
@@ -1063,7 +1059,9 @@ class VariableDeclarator(Declarator):
     def __str__(self):
         s = ""
         if self.variable != None:
-            s += " " + str(self.variable)
+            s += str(self.variable.type)
+            s += " "
+            s += str(self.variable.name)
         if self.initializer != None:
             s += " = " + str(self.initializer)
         return s
@@ -1113,7 +1111,7 @@ class ExpressionStatement(Statement):
     def __init__(self, expression):
         self.expression = expression
     def __str__(self):
-        return str(self.expression)
+        return str(self.expression) + ";"
     def translate(self):
         self.expression.translate()
         return None
@@ -1296,7 +1294,7 @@ class DoWhileStatement(Statement):
 class CaseStatement(Statement):
     def __init__(self, case, caseBody=None):
         self.case = case
-        self. caseBody = caseBody
+        self.caseBody = caseBody
     def __str__(self):
         return "case %s: %s" %(str(self.case), str(self.caseBody))
     def translate(self):
@@ -1367,7 +1365,7 @@ class CompoundStatement(Statement):
             assert isinstance(self.statements, list)
             for item in self.statements:
                 s += str(item)
-                s += ";\n"
+                s += "\n"
         s += "\n}"
         return s
     def translate(self):

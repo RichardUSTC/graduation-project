@@ -243,11 +243,11 @@ def p_struct_or_union_2(t):
 
 def p_struct_declaration_list_1(t):
     'struct_declaration_list : struct_declaration'
-    t[0] = [ t[1] ]
+    t[0] = t[1]
 
 def p_struct_declaration_list_2(t):
     'struct_declaration_list : struct_declaration_list struct_declaration'
-    t[0] = t[1] + [ t[2] ]
+    t[0] = t[1] + t[2]
 
 # init-declarator-list:
 
