@@ -899,7 +899,8 @@ class CastExpression(Expression):
     def __str__(self):
         return "(%s)(%s)" % (str(self.targetType), str(self.originalExpression))
     def translate(self):
-        raise UnhandledTranslationError
+        originalResult = self.originalExpression.translate()
+        return TypeCaster.castTo(self.targetType, originalExpression) 
 
 class ConditionalExpression(Expression):
     def __init__(self, condition, truePart, falsePart):
@@ -967,7 +968,9 @@ class CommaExpression(Expression):
     def append(self, expression):
         self.expressionList.append(expression)
     def translate(self):
-        raise UnhandledTranslationError
+        for item in self.expressionList:
+            result = item.translate()
+        return result
 
 class InstanceMemberAccessExpression(Expression):
     def __init__(self, instance, member):
@@ -1082,6 +1085,8 @@ class TypeDeclarator(Declarator):
         self.type = type
     def __str__(self):
         return str(self.type)
+    def translate(self):
+        raise UnhandledTranslationError
 
 class Statement(object):
     def __repr__(self):
