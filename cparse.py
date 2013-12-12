@@ -280,11 +280,11 @@ def p_struct_declaration(t):
     if isinstance(t[1], translator.Type):
         t[0] = t[2]
         for item in t[0]:
-            if item.type == None:
-                item.type = t[1]
-            elif isinstance(item.type, translator.PointerType):
-                if item.type.baseType == None:
-                    item.type.baseType = t[1]
+            if item.variable.type == None:
+                item.variable.type = t[1]
+            elif isinstance(item.variable.type, translator.PointerType):
+                if item.variable.type.baseType == None:
+                    item.variable.type.baseType = t[1]
                 else:
                     raise UnhandledSyntaxError
             else:
