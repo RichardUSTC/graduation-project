@@ -900,7 +900,7 @@ class CastExpression(Expression):
         return "(%s)(%s)" % (str(self.targetType), str(self.originalExpression))
     def translate(self):
         originalResult = self.originalExpression.translate()
-        return TypeCaster.castTo(self.targetType, originalExpression) 
+        return TypeCaster.castTo(self.targetType, originalExpression)
 
 class ConditionalExpression(Expression):
     def __init__(self, condition, truePart, falsePart):
