@@ -957,12 +957,12 @@ def p_postfix_expression_4(t):
 def p_postfix_expression_5(t):
     'postfix_expression : postfix_expression PERIOD ID'
     member = translator.Variable(t[3])
-    t[0] = translator.InstanceMemberAccessExpression(t[1], member)
+    t[0] = translator.InstanceFieldAccessExpression(t[1], member)
 
 def p_postfix_expression_6(t):
     'postfix_expression : postfix_expression ARROW ID'
     member = translator.Variable(t[3])
-    t[0] = translator.PointerMemberAccessExpression(t[1], member)
+    t[0] = translator.PointerFieldAccessExpression(t[1], member)
 
 def p_postfix_expression_7(t):
     'postfix_expression : postfix_expression PLUSPLUS'

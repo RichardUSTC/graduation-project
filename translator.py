@@ -968,23 +968,23 @@ class CommaExpression(Expression):
             result = item.translate()
         return result
 
-class InstanceMemberAccessExpression(Expression):
-    def __init__(self, instance, member):
+class InstanceFieldAccessExpression(Expression):
+    def __init__(self, instance, field):
         self.instance = instance
-        self.member = member
+        self.field = field
     def __str__(self):
-        return "(%s).%s" % (str(self.instance), str(self.member))
+        return "(%s).%s" % (str(self.instance), str(self.field))
     def setValue(self, result):
         raise UnhandledTranslationError
     def translate(self):
         raise UnhandledTranslationError
 
-class PointerMemberAccessExpression(Expression):
-    def __init__(self, pointer, member):
+class PointerFieldAccessExpression(Expression):
+    def __init__(self, pointer, field):
         self.pointer = pointer
-        self.member = member
+        self.field = field
     def __str__(self):
-        return "(%s)->%s" % (str(self.pointer), str(self.member))
+        return "(%s)->%s" % (str(self.pointer), str(self.field))
     def setValue(self, result):
         raise UnhandledTranslationError
     def translate(self):
