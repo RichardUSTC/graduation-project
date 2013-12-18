@@ -382,6 +382,8 @@ class Type(object):
         raise TypeCompareError
     def getIRType(self):
         raise UnhandledTranslationError
+    def getBytes(self):
+        raise UnhandledTranslationError
 
 class VoidType(Type):
     def __str__(self):
@@ -395,6 +397,8 @@ class VoidType(Type):
             return TypeCompareResult.EQ
         else:
             return TypeCompareResult.INCOMPARABLE
+    def getBytes(self):
+        return 0
 
 class IntType(Type):
     def __init__(self, isSigned=True, size=struct.calcsize("i")*8):
@@ -432,10 +436,26 @@ class IntType(Type):
         typeName = Temp.getTempName()
         CodeEmitter.appendLine("Type *%s = Type::getIntNTy(context, %d);" % (typeName, self.size))
         return typeName
+    def getBytes(self):
+        return (self.size+7)/8
 
 class Twin64Type(Type):
     def __str__(self):
         return "Twin64_t"
+    def getIRType(self):
+        typeName = "twin64_t_%d" % (Temp.getTempId())
+        CodeEmitter.appendLine("StructType *%s = module->getTypeByName(\"Twin64_t\");" % (typeName))
+        CodeEmitter.appendLine("if(!%s){" % typeName);
+        typeVectorName = "typeVector_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("std::vector<Type *> %s;" % typeVectorName)
+        intType = IntType(size=64, isSigned=True)
+        CodeEmitter.appendLine("%s.push_back(%s);" % (typeVectorName, intType.getIRType()))
+        CodeEmitter.appendLine("%s.push_back(%s);" % (typeVectorName, intType.getIRType()))
+        CodeEmitter.appendLine("%s = StructType::create(%s, \"Twin64_t\");" % (typeName, typeVectorName))
+        CodeEmitter.appendLine("}");
+        return structTypeName
+    def getBytes(self):
+        return 16
 
 class FloatType(Type):
     def __str__(self):
@@ -453,6 +473,8 @@ class FloatType(Type):
         typeName = Temp.getTempName()
         CodeEmitter.appendLine("Type *%s = Type::getFloatTy(context);" % (typeName))
         return typeName
+    def getBytes(self):
+        return struct.calcsize("f")
 
 class DoubleType(Type):
     def __str__(self):
@@ -468,6 +490,8 @@ class DoubleType(Type):
         typeName = Temp.getTempName()
         CodeEmitter.appendLine("Type *%s = Type::getDoubleTy(context);" % (typeName))
         return typeName
+    def getBytes(self):
+        return struct.calcsize("d")
 
 class EnumType(IntType):
     pass
@@ -481,6 +505,8 @@ class TypeIDType(Type):
         t = typeIDTable.get(self.typeID)
         assert t != None
         return t
+    def getBytes(self):
+        return self.getActualType().getBytes()
 
 class PointerType(Type):
     def __init__(self, baseType=None, level=1):
@@ -510,28 +536,143 @@ class PointerType(Type):
                 return TypeCompareResult.INCOMPARABLE
         else:
             return TypeCompareResult.INCOMPARABLE
+    def getBytes(self):
+        return struct.calcsize("P")
 
-class StructOrUnionType(Type):
-    structOrUnion = "unknown"
+class StructUnionBaseType(Type):
+    structUnion = "struct/union"
     def __init__(self, name=None, definition=None):
         self.name = name
         self.definition = definition
+        self.irTypeName = None
+        self.fullType = None
+        self.fullName = None
     def __str__(self):
-        s = self.structOrUnion + " "
+        s = self.structUnion + " "
         if self.name != None:
             s += self.name
         if self.definition != None:
             s += "{\n"
-            for item in self.definition:
-                s += str(item)
+            for field in self.definition:
+                s += str(field)
                 s += ";\n"
             s += "\n}"
         return s
-class StructType(StructOrUnionType):
-    structOrUnion = "struct"
+    def getFullName(self):
+        if self.fullName == None:
+            if self.name != None:
+                self.fullName = self.structUnion + "_" + self.name
+            else:
+                self.fullName = self.structUnion
+        return self.fullName
+    def getFullType(self):
+        if self.fullType == None:
+            if self.definition != None:
+                self.fullType = self
+            else:
+                t = typeIDTable.get(self.getFullName())
+                assert t != None
+                self.fullType = t
+        return self.fullType
 
-class UnionType(StructOrUnionType):
-    structOrUnion = "union"
+class StructType(StructUnionBaseType):
+    structUnion = "struct"
+    def getIRType(self):
+        fullType = self.getFullType()
+        structTypeName = "%s_%d" % (self.getFullName(), Temp.getTempId())
+        if fullType.irTypeName == None:
+            fullType.irTypeName = structTypeName
+        CodeEmitter.appendLine("StructType *%s = module->getTypeByName(\"%s\");" % (structTypeName, fullType.irTypeName))
+        CodeEmitter.appendLine("if(!%s){" % structTypeName);
+        fieldTypeVectorName = "fieldTypeVector_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("std::vector<Type *> %s;" % fieldTypeVectorName)
+        for field in fullType.definition:
+            assert isinstance(field, VariableDeclarator)
+            fieldTypeName = field.variable.type.getIRType()
+            CodeEmitter.appendLine("%s.push_back(%s);" % (fieldTypeVectorName, fieldTypeName))
+        CodeEmitter.appendLine("%s = StructType::create(%s, \"%s\");" % (structTypeName, fieldTypeVectorName, fullType.irTypeName))
+        CodeEmitter.appendLine("}");
+        return structTypeName
+    def getBytes(self):
+        # Here I assume that all fields align to its bytes boundary. This might not be right, be cautious.
+        bytes = 0
+        fullType = self.getFullType()
+        for field in fullType.definition:
+            assert isinstance(field, VariableDeclarator)
+            fieldBytes = field.variable.type.getBytes()
+            if bytes % fieldBytes != 0:
+                bytes += fieldBytes - bytes % fieldBytes
+            bytes += fieldBytes
+        return bytes
+    def getFieldPointerByName(self, name, structPointer):
+        fullType = self.getFullType()
+        index = 0
+        fieldType = None
+        for field in fullType.definition:
+            assert isinstance(field, VariableDeclarator)
+            if field.variable.name == name:
+                fieldType = field.variable.type
+                break
+            index += 1
+        else:
+            raise UnhandledTranslationError
+        indexVectorName = "index_vector_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("std::vector<Value *> %s;" % indexVectorName)
+        zero = "zero_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("Value *%s = translator::getImm(0);" % zero)
+        indexName = "index_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("Value *%s = translator::getImm(%d)" % (indexName, index))
+        CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, zero))
+        CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, indexName))
+        fieldPointerName += "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
+        CodeEmitter.appendLine("Value *%s = builder->CreateGEP(%s, %s);" % (fieldPointerName, structPointer, indexVectorName))
+        return TranslationResult(PointerType(fieldType), fieldPointerName)
+
+class UnionType(StructUnionBaseType):
+    structUnion = "union"
+    def getIRType(self):
+        fullType = self.getFullType()
+        unionTypeName = "%s_%d" % (self.getFullName(), Temp.getTempId())
+        if fullType.irTypeName == None:
+            fullType.irTypeName = unionTypeName
+        CodeEmitter.appendLine("StructType *%s = module->getTypeByName(\"%s\");" % (unionTypeName, fullType.irTypeName))
+        CodeEmitter.appendLine("if(!%s){" % unionTypeName);
+        fieldTypeVectorName = "fieldTypeVector_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("std::vector<Type *> %s;" % fieldTypeVectorName)
+        greatestFieldSize = 0
+        greatestFieldType = None
+        for field in fullType.definition:
+            assert isinstance(field, VariableDeclarator)
+            fieldType = field.variable.type
+            if fieldType.getBytes() > greatestFieldSize:
+                greatestFieldSize = fieldType.getBytes
+                greatestFieldType = fieldType
+        assert greatestFieldType != None
+        greatestFieldTypeName = greatestFieldType.getIRType()
+        CodeEmitter.appendLine("%s.push_back(%s);" % (fieldTypeVectorName, greatestFieldTypeName))
+        CodeEmitter.appendLine("%s = StructType::create(%s, \"%s\");" % (unionTypeName, fieldTypeVectorName, fullType.irTypeName))
+        CodeEmitter.appendLine("}");
+        return greatestFieldTypeName
+    def getFieldPointerByName(self, name, unionPointer):
+        fullType = self.getFullType()
+        fieldType = None
+        for field in fullType.definition:
+            assert isinstance(field, VariableDeclarator)
+            if field.variable.name == name:
+                fieldType = field.variable.type
+                break
+        else:
+            raise UnhandledTranslationError
+        if self.name != None:
+            fieldPointerName = self.name
+        else:
+            fieldPointerName = ""
+        fieldTypeName = fieldType.getIRType()
+        fieldPointerTypeName = Temp.getTempName()
+        CodeEmitter("PointerType *%s = %s->getPointerTo();" % fieldPointerTypeName, fieldTypeName)
+        fieldPointerName += "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
+        CodeEmitter.appendLine("Value *%s = builder->CreateBitCast(%s, %s);" % (fieldPointerName, unionPointer, fieldPointerTypeName))
+        return TranslationResult(PointerType(fieldType), fieldPointerName)
 
 class Expression(object):
     def __repr__(self):
