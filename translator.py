@@ -729,6 +729,8 @@ class NormalVariable(Variable):
         assert self.allocaValue != None
         newResult = TypeCaster.castTo(self.type, result)
         CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, self.allocaValue))
+    def getPointer(self):
+        return TranslationResult(PointerType(self.type), self.allocaValue)
     def translate(self):
         assert self.allocaValue != None
         value = "%s_%d" % (self.name, Temp.getTempId())
@@ -1023,9 +1025,14 @@ class UnaryOperandExpression(Expression):
         elif self.operator == "--":
             return self._translateHelper("Sub")
         elif self.operator == "&":
-            return self.operand.reference()
+            return self.operand.getPointer()
         elif self.operator == "*":
-            return self.operand.dereference()
+            operandResult = self.operand.translate()
+            assert isinstance(operandResult.type, PointerType)
+            resultType = operandResult.type.baseType
+            resultName = Temp.getTempName()
+            CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, operandResult.value))
+            return TranslationResult(resultType, resultName)
         else:
             raise UnhandledTranslationError
 
@@ -1117,6 +1124,11 @@ class InstanceFieldAccessExpression(Expression):
         return "(%s).%s" % (str(self.instance), str(self.field))
     def setValue(self, result):
         raise UnhandledTranslationError
+    def getPointer(self):
+        instancePointerResult = self.instance.getPointer()
+        instanceType = instancePointerResult.type.baseType
+        assert isinstance(instanceType, StructUnionBaseType)
+        return instanceType.getFieldPointerByName(self.field, instancePointerResult)
     def translate(self):
         raise UnhandledTranslationError
 
@@ -1128,6 +1140,11 @@ class PointerFieldAccessExpression(Expression):
         return "(%s)->%s" % (str(self.pointer), str(self.field))
     def setValue(self, result):
         raise UnhandledTranslationError
+    def getPointer(self):
+        instancePointerResult = self.pointer.translate()
+        instanceType = instancePointerResult.type.baseType
+        assert isinstance(instanceType, StructUnionBaseType)
+        return instanceType.getFieldPointerByName(self.field, instancePointerResult)
     def translate(self):
         raise UnhandledTranslationError
 
@@ -1138,6 +1155,8 @@ class ArrayAccessExpression(Expression):
     def __str__(self):
         return "(%s)[%s]" % (str(self.base), str(self.index))
     def setValue(self, result):
+        raise UnhandledTranslationError
+    def getPointer(self):
         raise UnhandledTranslationError
     def translate(self):
         raise UnhandledTranslationError
