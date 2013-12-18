@@ -1123,14 +1123,20 @@ class InstanceFieldAccessExpression(Expression):
     def __str__(self):
         return "(%s).%s" % (str(self.instance), str(self.field))
     def setValue(self, result):
-        raise UnhandledTranslationError
+        fieldPointerResult = self.getPointer()
+        fieldType = fieldPointerResult.type.baseType
+        newResult = TypeCaster.castTo(fieldType, result)
+        CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, fieldPointerResult.value))
     def getPointer(self):
         instancePointerResult = self.instance.getPointer()
         instanceType = instancePointerResult.type.baseType
         assert isinstance(instanceType, StructUnionBaseType)
         return instanceType.getFieldPointerByName(self.field, instancePointerResult)
     def translate(self):
-        raise UnhandledTranslationError
+        fieldPointerResult = self.getPointer()
+        resultName = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, fieldPointerResult.value))
+        return TranslationResult(fieldPointerResult.type.baseType, resultName)
 
 class PointerFieldAccessExpression(Expression):
     def __init__(self, pointer, field):
@@ -1139,14 +1145,20 @@ class PointerFieldAccessExpression(Expression):
     def __str__(self):
         return "(%s)->%s" % (str(self.pointer), str(self.field))
     def setValue(self, result):
-        raise UnhandledTranslationError
+        fieldPointerResult = self.getPointer()
+        fieldType = fieldPointerResult.type.baseType
+        newResult = TypeCaster.castTo(fieldType, result)
+        CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, fieldPointerResult.value))
     def getPointer(self):
         instancePointerResult = self.pointer.translate()
         instanceType = instancePointerResult.type.baseType
         assert isinstance(instanceType, StructUnionBaseType)
         return instanceType.getFieldPointerByName(self.field, instancePointerResult)
     def translate(self):
-        raise UnhandledTranslationError
+        fieldPointerResult = self.getPointer()
+        resultName = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, fieldPointerResult.value))
+        return TranslationResult(fieldPointerResult.type.baseType, resultName)
 
 class ArrayAccessExpression(Expression):
     def __init__(self, base, index):
