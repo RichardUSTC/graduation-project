@@ -1256,7 +1256,12 @@ class TypeDeclarator(Declarator):
     def __str__(self):
         return str(self.type)
     def translate(self):
-        raise UnhandledTranslationError
+        CodeEmitter.appendLine("/*\n%s\n*/" % str(self))
+        if isinstance(self.type, StructType) or isinstance(self.type, UnionType):
+            if self.type.name != None:
+                typeIDTable.add(self.type.getFullName(), self.type)
+        else:
+            raise UnhandledTranslationError
 
 class Statement(object):
     def __repr__(self):
