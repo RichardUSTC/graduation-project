@@ -1167,11 +1167,24 @@ class ArrayAccessExpression(Expression):
     def __str__(self):
         return "(%s)[%s]" % (str(self.base), str(self.index))
     def setValue(self, result):
-        raise UnhandledTranslationError
+        pointerResult = self.getPointer()
+        newResult = TypeCaster.castTo(pointerResult.type.baseType, result)
+        CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, pointerResult.value))
     def getPointer(self):
-        raise UnhandledTranslationError
+        baseResult = self.base.translate()
+        assert isinstance(baseResult.type, PointerType)
+        indexResult = self.index.translate()
+        if not isinstance(indexResult.type, IntType):
+            indexResult = TypeCaster.castTo(IntType(), indexResult)
+        resultName = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = builder->CreateInBoundsGEP(%s, %s);" % (baseResult.value, indexResult.value))
+        return TranslationResult(baseResult.type, resultName)
     def translate(self):
-        raise UnhandledTranslationError
+        pointerResult = self.getPointer()
+        resultType = pointerResult.type.baseType
+        resultName = Temp.getTempName()
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, pointerResult.value))
+        return TranslationResult(resultType, resultName)
 
 class Constant(object):
     def __str__(self):
