@@ -574,6 +574,13 @@ class StructUnionBaseType(Type):
                 assert t != None
                 self.fullType = t
         return self.fullType
+    def compare(self, other):
+        if not isinstance(other, StructUnionBaseType):
+            return TypeCompareResult.INCOMPARABLE
+        if self.getFullType() == other.getFullType():
+            return TypeCompareResult.EQ
+        else:
+            return TypeCompareResult.INCOMPARABLE
 
 class StructType(StructUnionBaseType):
     structUnion = "struct"
