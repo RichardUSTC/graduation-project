@@ -631,7 +631,7 @@ class StructType(StructUnionBaseType):
         CodeEmitter.appendLine("Value *%s = translator::getImm(%d)" % (indexName, index))
         CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, zero))
         CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, indexName))
-        fieldPointerName += "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
+        fieldPointerName = "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateGEP(%s, %s);" % (fieldPointerName, structPointer, indexVectorName))
         return TranslationResult(PointerType(fieldType), fieldPointerName)
 
@@ -670,14 +670,10 @@ class UnionType(StructUnionBaseType):
                 break
         else:
             raise UnhandledTranslationError
-        if self.name != None:
-            fieldPointerName = self.name
-        else:
-            fieldPointerName = ""
         fieldTypeName = fieldType.getIRType()
         fieldPointerTypeName = Temp.getTempName()
-        CodeEmitter("PointerType *%s = %s->getPointerTo();" % fieldPointerTypeName, fieldTypeName)
-        fieldPointerName += "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
+        CodeEmitter.appendLine("PointerType *%s = %s->getPointerTo();" % (fieldPointerTypeName, fieldTypeName))
+        fieldPointerName = "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateBitCast(%s, %s);" % (fieldPointerName, unionPointer, fieldPointerTypeName))
         return TranslationResult(PointerType(fieldType), fieldPointerName)
 
@@ -1150,7 +1146,7 @@ class InstanceFieldAccessExpression(Expression):
         instancePointerResult = self.instance.getPointer()
         instanceType = instancePointerResult.type.baseType
         assert isinstance(instanceType, StructUnionBaseType)
-        return instanceType.getFieldPointerByName(self.field, instancePointerResult)
+        return instanceType.getFieldPointerByName(self.field.name, instancePointerResult.value)
     def translate(self):
         fieldPointerResult = self.getPointer()
         resultName = Temp.getTempName()
@@ -1172,7 +1168,7 @@ class PointerFieldAccessExpression(Expression):
         instancePointerResult = self.pointer.translate()
         instanceType = instancePointerResult.type.baseType
         assert isinstance(instanceType, StructUnionBaseType)
-        return instanceType.getFieldPointerByName(self.field, instancePointerResult)
+        return instanceType.getFieldPointerByName(self.field.name, instancePointerResult.value)
     def translate(self):
         fieldPointerResult = self.getPointer()
         resultName = Temp.getTempName()
