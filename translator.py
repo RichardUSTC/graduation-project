@@ -1092,12 +1092,24 @@ class ConditionalExpression(Expression):
 
 class FunctionCallExpression(Expression):
     def __init__(self, function, arguments):
-        self.function = function
+        self.function = function #NOTE: function might be function pointer
         self.arguments = arguments
     def __str__(self):
         return "%s(%s)" %(str(self.function), str(self.arguments))
     def translate(self):
-        raise UnhandledTranslationError
+        CodeEmitter.appendLine("/* %s */" % str(self))
+        resultName = Temp.getTempName()
+        if str(self.function) in ("findCarry", "findOverflow", "findNegative", "findZero"):
+            width = self.arguments[0].value
+            code = "Value *%s = Translator::%s(this, %s" % (resultName, str(self.function), width)
+            for i in range(1, len(self.arguments)):
+                argumentResult = self.arguments[i].translate()
+                code += ", " + argumentResult.value
+            code += ");"
+            CodeEmitter.appendLine(code)
+            return TranslationResult(IntType(), resultName)
+        else:
+            raise UnhandledTranslationError
 
 class CommaExpression(Expression):
     def __init__(self, expressionList):
