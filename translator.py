@@ -701,6 +701,12 @@ class Variable(Expression):
             v.setValue(result)
         else:
             raise UnhandledTranslationError
+    def getPointer(self):
+        v = variableTable.get(self.name)
+        if v != None:
+            return v.getPointer()
+        else:
+            raise UnhandledTranslationError
     def translate(self):
         v = variableTable.get(self.name)
         if v != None:
@@ -712,6 +718,8 @@ class IntRegister(Variable):
     def setValue(self, result):
         newResult = TypeCaster.castTo(self.type, result)
         CodeEmitter.appendLine("setIntReg(this, %s, %s);" % (self.name.upper(), newResult.value))
+    def getPointer(self):
+        raise UnhandledTranslationError
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = getIntReg(this, %s);" % (value, self.name.upper()))
@@ -722,6 +730,10 @@ class IntConstantVariable(Variable):
         value = "%s_%d" % (self.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = translator::getImm(%s);" % (value, self.name))
         return TranslationResult(self.type, value)
+    def getPointer(self):
+        raise UnhandledTranslationError
+    def translate(self):
+        raise UnhandledTranslationError
 
 class NormalVariable(Variable):
     def __init__(self, name, type, allocaValue):
