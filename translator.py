@@ -1,6 +1,8 @@
 import exceptions
 import re
 import struct
+import cparse
+import clex
 import pdb
 
 #####################################################################
@@ -50,19 +52,18 @@ class UnhandledTranslationError(Exception): pass
 
 class CodeEmitter(object):
     @classmethod
-    def init(cls, fileName):
-        cls.fileName = fileName
-        with open(cls.fileName, "w") as f:
-            f.truncate()
+    def init(cls):
+        cls.code = ""
         Temp.reset()
     @classmethod
     def append(cls, code):
-        with open(cls.fileName, "a") as f:
-            f.write(code)
+        cls.code += code
     @classmethod
     def appendLine(cls, code):
-        with open(cls.fileName, "a") as f:
-            f.write(code+"\n")
+        cls.code += code + '\n'
+    @classmethod
+    def getCode(cls):
+        return cls.code
 
 class BranchGenerator(object):
     def __init__(self, condName=None, mayAppend=False):
@@ -732,7 +733,7 @@ class IntConstantVariable(Variable):
         return TranslationResult(self.type, value)
     def getPointer(self):
         raise UnhandledTranslationError
-    def translate(self):
+    def setValue(self):
         raise UnhandledTranslationError
 
 class NormalVariable(Variable):
@@ -1672,4 +1673,13 @@ class LoopOrSwitchStack(list):
         else:
             raise UnhandledTranslationError
 
-loopOrSwitchStack = LoopOrSwitchStack()
+loopOrSwitchStack = LoopOrSwitchStack() 
+
+class Translator(object):
+    @classmethod
+    def translate(cls, source):
+        CodeEmitter.init()
+        source = preprocess(source)
+        parseResult = cparse.parser.parse(source, debug=1, lexer=clex.lexer)
+        parseResult.translate()
+        return CodeEmitter.getCode()
