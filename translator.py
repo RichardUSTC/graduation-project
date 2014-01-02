@@ -54,12 +54,32 @@ class CodeEmitter(object):
     @classmethod
     def init(cls):
         cls.code = ""
+        cls.regexBuilder = re.compile("(?<!\w)builder(?!\w)")
+        cls.regexContext = re.compile("(?<!\w)context(?!\w)")
+        cls.regexModule = re.compile("(?<!\w)module(?!\w)")
+        cls.hasBuilder = False
+        cls.hasContext = False
+        cls.hasModule = False
         Temp.reset()
     @classmethod
+    def appendHelper(cls, code):
+        'if the code uses "builder", "context" or "module", add code to read them'
+        if cls.hasBuilder==False and cls.regexBuilder.search(code) != None:
+            cls.hasBuilder = True
+            cls.code = "IRBuilder<> *builder = Translator::getBuilder();\n" + cls.code
+        if cls.hasContext==False and cls.regexContext.search(code) != None:
+            cls.hasContext = True
+            cls.code = "LLVMContext& context = Translator::getContext();\n" + cls.code
+        if cls.hasModule==False and cls.regexModule.search(code) != None:
+            cls.hasModule = True
+            cls.code = "Module* module = Translator::getModule();\n" + cls.code
+    @classmethod
     def append(cls, code):
+        cls.appendHelper(code)
         cls.code += code
     @classmethod
     def appendLine(cls, code):
+        cls.appendHelper(code)
         cls.code += code + '\n'
     @classmethod
     def getCode(cls):
