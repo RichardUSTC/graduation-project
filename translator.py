@@ -93,9 +93,12 @@ class BranchGenerator(object):
         self.trueBlockName = "trueBlock_%d" % Temp.getTempId()
         self.falseBlockName = "falseBlock_%d" % Temp.getTempId()
         self.exitBlockName = "exitBlock_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.trueBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.falseBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock()" % self.exitBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.trueBlockName, self.trueBlockName))
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.falseBlockName, self.falseBlockName))
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.exitBlockName, self.exitBlockName))
     def setCondName(self, condName):
         self.condName = condName
     def setMayAppend(self, mayAppend):
@@ -176,12 +179,16 @@ class LoopGenerator(object):
         self.condBlockName = "cond_block_%d" % Temp.getTempId()
         self.bodyBlockName = "body_block_%d" % Temp.getTempId()
         self.exitBlockName = "exit_block_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.condBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.bodyBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.exitBlockName)
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.condBlockName, self.condBlockName))
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.bodyBlockName, self.bodyBlockName))
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (self.exitBlockName, self.exitBlockName))
         if loopType == LoopType.FOR:
             self.postLoopBodyBlockName = "post_body_block_%d" % Temp.getTempId()
-            CodeEmitter.appendLine("BasicBlock *%s = createBlock();" % self.postLoopBodyBlockName)
+            CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+                (self.postLoopBodyBlockName, self.postLoopBodyBlockName))
     def setCondName(self, condName):
         self.condName = condName
     def startCondition(self):
@@ -647,9 +654,9 @@ class StructType(StructUnionBaseType):
         indexVectorName = "index_vector_%d" % Temp.getTempId()
         CodeEmitter.appendLine("std::vector<Value *> %s;" % indexVectorName)
         zero = "zero_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("Value *%s = translator::getImm(0);" % zero)
+        CodeEmitter.appendLine("Value *%s = getImm(0);" % zero)
         indexName = "index_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("Value *%s = translator::getImm(%d)" % (indexName, index))
+        CodeEmitter.appendLine("Value *%s = getImm(%d)" % (indexName, index))
         CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, zero))
         CodeEmitter.appendLine("%s.push_back(%s);" % (indexVectorName, indexName))
         fieldPointerName = "%s_%s_%d" % (self.getFullName(), name, Temp.getTempId())
@@ -749,7 +756,7 @@ class IntRegister(Variable):
 class IntConstantVariable(Variable):
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = translator::getImm(%s);" % (value, self.name))
+        CodeEmitter.appendLine("Value *%s = getImm(%s);" % (value, self.name))
         return TranslationResult(self.type, value)
     def getPointer(self):
         raise UnhandledTranslationError
@@ -870,7 +877,7 @@ class BinaryOperandExpression(Expression):
             if not isinstance(leftResult.type, IntType):
                 leftResult = TypeCaster.castTo(IntType(), leftResult)
             zero = "zero_%d" % Temp.getTempId()
-            CodeEmitter.appendLine("Value *%s = translator::getImm%d(0);" % (zero, leftResult.type.size))
+            CodeEmitter.appendLine("Value *%s = getImm%d(0);" % (zero, leftResult.type.size))
             leftBoolValue = Temp.getTempName()
             CodeEmitter.appendLine("Value *%s = builder->CreateICmpNE(%s, %s);" % (leftBoolValue, leftResult.value, zero))
 
@@ -900,7 +907,7 @@ class BinaryOperandExpression(Expression):
             if not isinstance(leftResult.type, IntType):
                 leftResult = TypeCaster.castTo(IntType(), leftResult)
             zero = "zero_%d" % Temp.getTempId()
-            CodeEmitter.appendLine("Value *%s = translator::getImm%d(0);" % (zero, leftResult.type.size))
+            CodeEmitter.appendLine("Value *%s = getImm%d(0);" % (zero, leftResult.type.size))
             leftBoolValue = Temp.getTempName()
             CodeEmitter.appendLine("Value *%s = builder->CreateICmpNE(%s, %s);" % (leftBoolValue, leftResult.value, zero))
 
@@ -1017,7 +1024,7 @@ class UnaryOperandExpression(Expression):
         zero = "zero_%d" % Temp.getTempId()
         if isinstance(operandType, IntType):
             function = "CreateICmpEQ"
-            CodeEmitter.appendLine("Value *%s = translator::getImm%s(0);" % (zero, operandType.size))
+            CodeEmitter.appendLine("Value *%s = getImm%s(0);" % (zero, operandType.size))
         elif isinstance(operandType, FloatType) or isinstance(operandType, DoubleType):
             function = "CreateFCmpEQ"
             CodeEmitter.appendLine("Value *%s = translator::getFp(0.0);" % zero)
@@ -1033,7 +1040,7 @@ class UnaryOperandExpression(Expression):
         resultName = Temp.getTempName()
         if isinstance(operandType, IntType):
             function = "Create%s" % opType
-            CodeEmitter.appendLine("Value *%s = translator::getImm%d(1);" % (one, operandType.size))
+            CodeEmitter.appendLine("Value *%s = getImm%d(1);" % (one, operandType.size))
         elif isinstance(operandType, FloatType) or isinstance(operandType, DoubleType):
             function = "CreateF%s" % opType
             CodeEmitter.appendLine("Value *%s = translator::getFp(1.0);" % (one))
@@ -1261,7 +1268,7 @@ class IntConstant(Constant):
         self.type = IntType(isSigned, size)
     def translate(self):
         name = Temp.getTempName()
-        CodeEmitter.appendLine("Value *%s = translator::getImm%d(%s);" % (name, self.type.size, self.value))
+        CodeEmitter.appendLine("Value *%s = getImm%d(%s);" % (name, self.type.size, self.value))
         return TranslationResult(self.type, name)
 
 class FloatConstant(Constant):
@@ -1438,7 +1445,7 @@ class ForStatement(Statement):
             loop.setCondName(conditionResult.value)
         else:
             one = "one_%d" % Temp.getTempId()
-            CodeEmitter.appendLine("Value *%s = translator::getImm1(1);" % one)
+            CodeEmitter.appendLine("Value *%s = getImm1(1);" % one)
             loop.setCondName(one)
         loop.endCondition()
 
@@ -1700,6 +1707,6 @@ class Translator(object):
     def translate(cls, source):
         CodeEmitter.init()
         source = preprocess(source)
-        parseResult = cparse.parser.parse(source, debug=1, lexer=clex.lexer)
+        parseResult = cparse.parser.parse(source, debug=0, lexer=clex.lexer)
         parseResult.translate()
         return CodeEmitter.getCode()
