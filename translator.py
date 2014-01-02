@@ -750,7 +750,7 @@ class IntRegister(Variable):
         raise UnhandledTranslationError
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (value, self.name))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (value, self.name, value))
         return TranslationResult(self.type, value)
 
 class IntConstantVariable(Variable):
@@ -777,7 +777,7 @@ class NormalVariable(Variable):
     def translate(self):
         assert self.allocaValue != None
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (value, self.allocaValue))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (value, self.allocaValue, value))
         return TranslationResult(self.type, value)
 
 class BinaryOperandExpression(Expression):
@@ -1074,7 +1074,7 @@ class UnaryOperandExpression(Expression):
             assert isinstance(operandResult.type, PointerType)
             resultType = operandResult.type.baseType
             resultName = Temp.getTempName()
-            CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, operandResult.value))
+            CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (resultName, operandResult.value, resultName))
             return TranslationResult(resultType, resultName)
         else:
             raise UnhandledTranslationError
@@ -1190,7 +1190,7 @@ class InstanceFieldAccessExpression(Expression):
     def translate(self):
         fieldPointerResult = self.getPointer()
         resultName = Temp.getTempName()
-        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, fieldPointerResult.value))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (resultName, fieldPointerResult.value, resultName))
         return TranslationResult(fieldPointerResult.type.baseType, resultName)
 
 class PointerFieldAccessExpression(Expression):
@@ -1212,7 +1212,7 @@ class PointerFieldAccessExpression(Expression):
     def translate(self):
         fieldPointerResult = self.getPointer()
         resultName = Temp.getTempName()
-        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, fieldPointerResult.value))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (resultName, fieldPointerResult.value, resultName))
         return TranslationResult(fieldPointerResult.type.baseType, resultName)
 
 class ArrayAccessExpression(Expression):
@@ -1238,7 +1238,7 @@ class ArrayAccessExpression(Expression):
         pointerResult = self.getPointer()
         resultType = pointerResult.type.baseType
         resultName = Temp.getTempName()
-        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (resultName, pointerResult.value))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (resultName, pointerResult.value, resultName))
         return TranslationResult(resultType, resultName)
 
 class Constant(object):
