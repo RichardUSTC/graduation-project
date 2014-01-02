@@ -745,12 +745,12 @@ class Variable(Expression):
 class IntRegister(Variable):
     def setValue(self, result):
         newResult = TypeCaster.castTo(self.type, result)
-        CodeEmitter.appendLine("setIntReg(this, %s, %s);" % (self.name.upper(), newResult.value))
+        CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, self.name))
     def getPointer(self):
         raise UnhandledTranslationError
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = getIntReg(this, %s);" % (value, self.name.upper()))
+        CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s);" % (value, self.name))
         return TranslationResult(self.type, value)
 
 class IntConstantVariable(Variable):
