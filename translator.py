@@ -1260,13 +1260,10 @@ class IntConstant(Constant):
         suffix = value[-3:]
         if 'll' in suffix:
             size = struct.calcsize("q")*8
-            j = j-2
         elif 'l' in suffix:
             size = struct.calcsize("l")*8
-            j = j-1
         if 'u' in suffix:
             isSigned = False
-            j = j-1
         self.value = value
         self.type = IntType(isSigned, size)
     def translate(self):
