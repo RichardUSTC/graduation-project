@@ -1708,6 +1708,10 @@ loopOrSwitchStack = LoopOrSwitchStack()
 class Translator(object):
     @classmethod
     def translate(cls, source):
+        tempTypeIDTable = DictStack()
+        tempTypeIDTable.push(predefinedTypeID)
+        tempTypeIDTable.push()
+
         CodeEmitter.init()
         source = preprocess(source)
         parseResult = cparse.parser.parse(source, debug=0, lexer=clex.lexer)
