@@ -742,7 +742,7 @@ class Variable(Expression):
         else:
             raise UnhandledTranslationError
 
-class IntRegister(Variable):
+class Operand(Variable):
     def setValue(self, result):
         newResult = TypeCaster.castTo(self.type, result)
         CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, self.name))
@@ -1637,9 +1637,9 @@ predefinedTypeID = {
     }
 
 predefinedValues = {
-    "Rd": IntRegister("Rd", IntType(True, 64)),
-    "Rm": IntRegister("Rm", IntType(True, 64)),
-    "Rn": IntRegister("Rn", IntType(True, 64)),
+    "Rd": Operand("Rd", IntType(True, 64)),
+    "Rm": Operand("Rm", IntType(True, 64)),
+    "Rn": Operand("Rn", IntType(True, 64)),
     "SHIFT": IntConstantVariable("SHIFT", IntType(True, 64)),
     "IMM6": IntConstantVariable("IMM6", IntType(True, 64))
     }
@@ -1710,3 +1710,20 @@ class Translator(object):
         parseResult = cparse.parser.parse(source, debug=0, lexer=clex.lexer)
         parseResult.translate()
         return CodeEmitter.getCode()
+    @classmethod
+    def addBitfield(cls, bitfield):
+        global predefinedValues
+        predefinedValues[bitfield] = IntConstantVariable(bitfield, IntType(True, 64))
+    @classmethod
+    def addOperand(cls, operandName, operandCType):
+        global predefinedValues
+        global predefinedTypeID
+        if operandCType in predefinedTypeID.keys():
+            operandType = predefinedTypeID[operandCType]
+        elif operandCType == 'float':
+            operandType = FloatType()
+        elif operandCType == "double":
+            operandType = DoubleType()
+        else:
+            raise UnhandledTranslationError
+        predefinedValues[operandName] = Operand(operandName, operandType)
