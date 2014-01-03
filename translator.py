@@ -1705,6 +1705,8 @@ class LoopOrSwitchStack(list):
 
 loopOrSwitchStack = LoopOrSwitchStack() 
 
+debug = True
+
 class Translator(object):
     @classmethod
     def translate(cls, source):
@@ -1714,7 +1716,9 @@ class Translator(object):
 
         CodeEmitter.init()
         source = preprocess(source)
-        parseResult = cparse.parser.parse(source, debug=0, lexer=clex.lexer)
+        if debug:
+            pdb.set_trace()
+        parseResult = cparse.parser.parse(source, debug=debug, lexer=clex.lexer)
         parseResult.translate()
         return CodeEmitter.getCode()
     @classmethod
