@@ -737,10 +737,13 @@ class Variable(Expression):
             raise UnhandledTranslationError
     def translate(self):
         v = variableTable.get(self.name)
+        # if cannot find the variable from variableTable, treat it as immediate
         if v != None:
             return v.translate()
         else:
-            raise UnhandledTranslationError
+            CodeEmitter.appendLine("/* Cannot find %s, treat it as immediate. */" % self.name)
+            v = IntConstantVariable(self.name, IntType(True, 64))
+            return v.translate()
 
 class Operand(Variable):
     def setValue(self, result):
