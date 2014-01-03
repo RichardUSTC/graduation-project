@@ -1645,8 +1645,11 @@ predefinedValues = {
     }
 
 class DictStack(list):
-    def push(self, item={}):
-        self.append(item)
+    def push(self, item=None):
+        if item != None:
+            self.append(item)
+        else:
+            self.append({})
     def top(self):
         return self[-1]
     def get(self, name):
