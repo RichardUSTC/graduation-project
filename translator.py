@@ -407,23 +407,7 @@ class TypeCaster(object):
         assert isinstance(input, TranslationResult)
         if targetType.compare(input.type) == TypeCompareResult.EQ:
             return input
-        newValue = Temp.getTempName()
-        typeName = targetType.getIRType()
-        if isinstance(targetType, DoubleType):
-            CodeEmitter.appendLine("Value *%s = builder->CreateFPCast(%s, %s);" % (newValue, input.value, typeName))
-        elif isinstance(targetType, FloatType):
-            CodeEmitter.appendLine("Value *%s = builder->CreateFPCast(%s, %s);" %(newValue, input.value, typeName))
-        elif isinstance(targetType, IntType):
-            if targetType.isSigned:
-                isSigned = "true"
-            else:
-                isSigned = "false"
-            CodeEmitter.appendLine("Value *%s = builder->CreateIntCast(%s, %s, %s);" % (newValue, input.value, typeName, isSigned))
-        elif isinstance(targetType, PointerType):
-            CodeEmitter.appendLine("Value *%s = builder->CreatePointerCast(%s, %s)" % (newValue, input.value, typeName))
-        else:
-            raise TypeCastError
-        return TranslationResult(targetType, newValue)
+        return targetType.castTo(input)
 
 class Type(object):
     def __repr__(self):
@@ -434,6 +418,8 @@ class Type(object):
         raise UnhandledTranslationError
     def getBytes(self):
         raise UnhandledTranslationError
+    def castTo(self, inputResult):
+        raise UnhandledTranslationError
 
 class VoidType(Type):
     def __str__(self):
@@ -443,6 +429,8 @@ class VoidType(Type):
         CodeEmitter.appendLine("Type *%s = Type::getVoidTy(context);" % typeName)
         return typeName
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if isinstance(other, VoidType):
             return TypeCompareResult.EQ
         else:
@@ -461,6 +449,8 @@ class IntType(Type):
         s += "int%d_t" % self.size
         return s
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if isinstance(other, FloatType) or isinstance(other, DoubleType):
             return -1
         elif isinstance(other, IntType):
@@ -488,6 +478,16 @@ class IntType(Type):
         return typeName
     def getBytes(self):
         return (self.size+7)/8
+    def castTo(self, input):
+        assert isinstance(input, TranslationResult)
+        newValue = Temp.getTempName()
+        typeName = self.getIRType()
+        if self.isSigned:
+            isSigned = "true"
+        else:
+            isSigned = "false"
+        CodeEmitter.appendLine("Value *%s = builder->CreateIntCast(%s, %s, %s);" % (newValue, input.value, typeName, isSigned))
+        return TranslationResult(self, newValue)
 
 class Twin64Type(Type):
     def __str__(self):
@@ -511,6 +511,8 @@ class FloatType(Type):
     def __str__(self):
         return 'float'
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if isinstance(other, DoubleType):
             return TypeCompareResult.LT
         elif isinstance(other, FloatType):
@@ -525,11 +527,19 @@ class FloatType(Type):
         return typeName
     def getBytes(self):
         return struct.calcsize("f")
+    def castTo(self, input):
+        assert isinstance(input, TranslationResult)
+        newValue = Temp.getTempName()
+        typeName = self.getIRType()
+        CodeEmitter.appendLine("Value *%s = builder->CreateFPCast(%s, %s);" %(newValue, input.value, typeName))
+        return TranslationResult(self, newValue)
 
 class DoubleType(Type):
     def __str__(self):
         return 'double'
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if isinstance(other, DoubleType):
             return TypeCompareResult.EQ
         elif isinstance(other, FloatType) or isinstance(other, IntType):
@@ -542,6 +552,12 @@ class DoubleType(Type):
         return typeName
     def getBytes(self):
         return struct.calcsize("d")
+    def castTo(self, input):
+        assert isinstance(input, TranslationResult)
+        newValue = Temp.getTempName()
+        typeName = self.getIRType()
+        CodeEmitter.appendLine("Value *%s = builder->CreateFPCast(%s, %s);" %(newValue, input.value, typeName))
+        return TranslationResult(self, newValue)
 
 class EnumType(IntType):
     pass
@@ -555,8 +571,14 @@ class TypeIDType(Type):
         t = typeIDTable.get(self.typeID)
         assert t != None
         return t
+    def getIRType(self):
+        return self.getActualType().getIRType()
     def getBytes(self):
         return self.getActualType().getBytes()
+    def compare(self, other):
+        return self.getActualType().compare(other)
+    def castTo(self, input):
+        return self.getActualType().castTo(input)
 
 class PointerType(Type):
     def __init__(self, baseType=None, level=1):
@@ -578,6 +600,8 @@ class PointerType(Type):
             baseTypeName = typeName
         return typeName
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if isinstance(other, PointerType):
             compareResult = self.baseType.compare(other.baseType)
             if compareResult == TypeCompareResult.EQ:
@@ -588,6 +612,13 @@ class PointerType(Type):
             return TypeCompareResult.INCOMPARABLE
     def getBytes(self):
         return struct.calcsize("P")
+    def castTo(self, input):
+        assert isinstance(input, TranslationResult)
+        newValue = Temp.getTempName()
+        typeName = self.getIRType()
+        CodeEmitter.appendLine("Value *%s = builder->CreatePointerCast(%s, %s);" % (newValue, input.value, typeName))
+        return TranslationResult(self, newValue)
+
 
 class StructUnionBaseType(Type):
     structUnion = "struct/union"
@@ -625,6 +656,8 @@ class StructUnionBaseType(Type):
                 self.fullType = t
         return self.fullType
     def compare(self, other):
+        if isinstance(other, TypeIDType):
+            other = other.getActualType()
         if not isinstance(other, StructUnionBaseType):
             return TypeCompareResult.INCOMPARABLE
         if self.getFullType() == other.getFullType():
