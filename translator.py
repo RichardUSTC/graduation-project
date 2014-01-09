@@ -1205,24 +1205,76 @@ class ConditionalExpression(Expression):
         branch.addPhi(resultName, resultIRType, trueResult.value, falseResult.value)
         return TranslationResult(resultType, resultName)
 
+functions = {
+    "testcond":(
+            IntType(),
+            IntType(False, 32),
+            IntType(False, 32),
+            IntType(False, 32),
+            IntType(False, 32),
+            IntType(False, 64)
+        )
+}
+
 class FunctionCallExpression(Expression):
     def __init__(self, function, arguments):
         self.function = function #NOTE: function might be function pointer
         self.arguments = arguments
     def __str__(self):
-        return "%s(%s)" %(str(self.function), str(self.arguments))
+        argumentsString = ",".join([str(argument) for argument in self.arguments])
+        return "%s(%s)" %(str(self.function), argumentsString)
     def translate(self):
         CodeEmitter.appendLine("/* %s */" % str(self))
         resultName = Temp.getTempName()
-        if str(self.function) in ("findCarry", "findOverflow", "findNegative", "findZero"):
+        functionName = str(self.function)
+        if functionName in ("findCarry", "findOverflow", "findNegative", "findZero"):
             width = self.arguments[0].value
-            code = "Value *%s = Translator::%s(this, %s" % (resultName, str(self.function), width)
-            for i in range(1, len(self.arguments)):
-                argumentResult = self.arguments[i].translate()
-                code += ", " + argumentResult.value
-            code += ");"
+            argumentsResult = [ argument.translate() for argument in self.arguments[1:] ]
+            argumentsString = ",".join([result.value for result in argumentsResult])
+            code = "Value *%s = Translator::%s(this, %s, %s);" % (resultName, functionName, width, argumentsString)
             CodeEmitter.appendLine(code)
-            return TranslationResult(IntType(), resultName)
+            castResultName = Temp.getTempName()
+            typeName = IntType(False, 1).getIRType()
+            CodeEmitter.appendLine("Value *%s = builder->CreateIntCast(%s, %s, false);" % (castResultName, resultName, typeName))
+            return TranslationResult(IntType(False, 1), castResultName)
+        elif functionName in ('sext_8', 'sext_16', 'sext_32', 'sext_64'):
+            argumentResult = self.arguments[0].translate()
+            width = functionName.split('_')[1]
+            CodeEmitter.appendLine("Value *%s = Translator::sext(%s, %s, true);" % (resultName, argumentResult.value, width))
+            return TranslationResult(IntType(True, 64), resultName)
+        elif functionName == "bits":
+            argumentsResult = [argument.translate() for argument in self.arguments]
+            argumentsString = ",".join([result.value for result in argumentsResult])
+            CodeEmitter.appendLine('Value *%s = genBits(%s);' % (resultName, argumentsString))
+            return TranslationResult(argumentsResult[0].type, resultName)
+        elif functionName == "swap_byte":
+            argumentResult = self.arguments[0].translate()
+            CodeEmitter.appendLine('Value *%s = genSwap_byte(%s);' % (resultName, argumentResult.value))
+            return TranslationResult(argumentResult.type, resultName)
+        elif functionName in functions.keys():
+            # Does not support function overloading yet
+            prototype = functions[functionName]
+            
+            # Get function
+            irFunctionName = "%s_%d" % (functionName, Temp.getTempId())
+            CodeEmitter.appendLine('Function *%s = module->getFunction("%s");' % (irFunctionName, functionName))
+            CodeEmitter.appendLine('if(%s == NULL){' % irFunctionName);
+            irPrototype = [t.getIRType() for t in prototype]
+            irArguments = ",".join(irPrototype)
+            CodeEmitter.appendLine('%s=cast<Function>(module->getOrInsertFunction("%s", %s, NULL));' % (irFunctionName, functionName, irArguments))
+            CodeEmitter.appendLine('execution_engine->addGlobalMapping(%s, (void *)%s);' % (irFunctionName, functionName))
+            CodeEmitter.appendLine('}')
+
+            # Prepare arguments
+            argumentsVectorName = "arguments_of_" + irFunctionName
+            CodeEmitter.appendLine("std::vector<Value *> %s;" % (argumentsVectorName))
+            for i in range(len(self.arguments)):
+                argumentResult = self.arguments[i].translate()
+                argumentResult = TypeCaster.castTo(prototype[i+1], argumentResult)
+                CodeEmitter.appendLine("%s.push_back(%s);" % (argumentsVectorName, argumentResult.value))
+            # Call the function
+            CodeEmitter.appendLine('Value *%s = builder->CreateCall(%s, %s);' % (resultName, irFunctionName, argumentsVectorName))
+            return TranslationResult(prototype[0], resultName)
         else:
             raise UnhandledTranslationError
 
