@@ -45,8 +45,13 @@ def substBitOps(code):
         match = bitOpExprRE.search(code)
     return code
 
+sextRE = re.compile(r'(?<!\w)sext\<(\d+)\>')
+def substSext(code):
+    code = sextRE.sub(r'sext_\1', code)
+    return code
+
 def preprocess(code):
-    return substBitOps(code)
+    return substBitOps(substSext(code))
 
 class UnhandledTranslationError(Exception): pass
 
