@@ -867,7 +867,7 @@ class BinaryOperandExpression(Expression):
             raise UnhandledTranslationError
         CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" %(resultName, function, newLeftResult.value, newRightResult.value))
         return TranslationResult(operandType, resultName)
-    # for '|' '&' '^' '<<' '>>'
+    # for '|' '&' '^'
     def _translateHelper2(self, opType):
         leftResult = self.left.translate()
         rightResult = self.right.translate()
@@ -903,6 +903,18 @@ class BinaryOperandExpression(Expression):
             raise UnhandledTranslationError
         CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" %(resultName, function, newLeftResult.value, newRightResult.value))
         return TranslationResult(IntType(isSigned=False, size=1), resultName)
+    # for '<<' '>>'
+    def _translateHelper4(self, opType):
+        leftResult = self.left.translate()
+        rightResult = self.right.translate()
+        assert isinstance(leftResult.type, IntType)
+        assert isinstance(rightResult.type, IntType)
+        newRightResult = TypeCaster.castTo(leftResult.type, rightResult)
+        resultName = Temp.getTempName()
+        operandType = leftResult.type
+        function = "Create%s" % opType
+        CodeEmitter.appendLine("Value *%s = builder->%s(%s, %s);" %(resultName, function, leftResult.value, newRightResult.value))
+        return TranslationResult(operandType, resultName)
     def translate(self):
         CodeEmitter.appendLine("/* %s */" % str(self))
         if self.operator == "=":
@@ -926,9 +938,9 @@ class BinaryOperandExpression(Expression):
         elif self.operator == "^":
             return self._translateHelper2("Xor")
         elif self.operator == "<<":
-            return self._translateHelper2("Shl")
+            return self._translateHelper4("Shl")
         elif self.operator == ">>":
-            return self._translateHelper2("LShr")
+            return self._translateHelper4("LShr")
         elif self.operator == "||":
             resultName = Temp.getTempName()
             leftResult = self.left.translate()
@@ -1017,10 +1029,10 @@ class BinaryOperandExpression(Expression):
             result = self._translateHelper1("Rem", intSignSensitive=True)
             self.left.setValue(result)
         elif self.operator == "<<=":
-            result = self._translateHelper2("Shl")
+            result = self._translateHelper4("Shl")
             self.left.setValue(result)
         elif self.operator == ">>=":
-            result = self._translateHelper2("LShr")
+            result = self._translateHelper4("LShr")
             self.left.setValue(result)
         elif self.operator == "&=":
             result = self._translateHelper2("And")
