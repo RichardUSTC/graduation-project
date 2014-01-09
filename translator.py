@@ -805,7 +805,7 @@ class Operand(Variable):
         newResult = TypeCaster.castTo(self.type, result)
         CodeEmitter.appendLine("builder->CreateStore(%s, %s);" % (newResult.value, self.name))
     def getPointer(self):
-        raise UnhandledTranslationError
+        return TranslationResult(PointerType(self.type), self.name)
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
         CodeEmitter.appendLine("Value *%s = builder->CreateLoad(%s, \"%s\");" % (value, self.name, value))
@@ -1139,13 +1139,15 @@ class UnaryOperandExpression(Expression):
 
 class CastExpression(Expression):
     def __init__(self, targetType, originalExpression):
+        if isinstance(targetType, TypeIDType):
+            targetType = targetType.getActualType()
         self.targetType = targetType
         self.originalExpression = originalExpression
     def __str__(self):
         return "(%s)(%s)" % (str(self.targetType), str(self.originalExpression))
     def translate(self):
         originalResult = self.originalExpression.translate()
-        return TypeCaster.castTo(self.targetType, originalExpression)
+        return TypeCaster.castTo(self.targetType, originalResult)
 
 class ConditionalExpression(Expression):
     def __init__(self, condition, truePart, falsePart):
@@ -1290,7 +1292,7 @@ class ArrayAccessExpression(Expression):
         if not isinstance(indexResult.type, IntType):
             indexResult = TypeCaster.castTo(IntType(), indexResult)
         resultName = Temp.getTempName()
-        CodeEmitter.appendLine("Value *%s = builder->CreateInBoundsGEP(%s, %s);" % (baseResult.value, indexResult.value))
+        CodeEmitter.appendLine("Value *%s = builder->CreateInBoundsGEP(%s, %s);" % (resultName, baseResult.value, indexResult.value))
         return TranslationResult(baseResult.type, resultName)
     def translate(self):
         pointerResult = self.getPointer()
@@ -1366,7 +1368,7 @@ class VariableDeclarator(Declarator):
             self.variable.type = self.variable.type.getActualType()
         typeName = self.variable.type.getIRType()
         allocaName = "ptr_%s_%d" % (self.variable.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = builder->CreateAlloca(%s);" % (allocaName, typeName))
+        CodeEmitter.appendLine('Value *%s = builder->CreateAlloca(%s, NULL, "%s");' % (allocaName, typeName, allocaName))
         var = NormalVariable(self.variable.name, self.variable.type, allocaName)
         variableTable.add(self.variable.name, var)
         if self.initializer != None:
@@ -1760,11 +1762,11 @@ class LoopOrSwitchStack(list):
 
 loopOrSwitchStack = LoopOrSwitchStack() 
 
-debug = True
+debug = False
 
 class Translator(object):
     @classmethod
-    def translate(cls, source):
+    def translate(cls, instruction, source):
         tempTypeIDTable = DictStack()
         tempTypeIDTable.push(predefinedTypeID)
         tempTypeIDTable.push()
@@ -1772,7 +1774,8 @@ class Translator(object):
         CodeEmitter.init()
         source = preprocess(source)
         if debug:
-            pdb.set_trace()
+            print instruction
+        print instruction
         parseResult = cparse.parser.parse(source, debug=debug, lexer=clex.lexer)
         parseResult.translate()
         return CodeEmitter.getCode()
