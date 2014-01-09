@@ -271,13 +271,16 @@ class SwitchGenerator(object):
         self.defaultBodyBlockName = None
         self.state = "init"
         self.isDefaultAtLast = False
+        self.previousCaseHasBreak = True
     def startSwtich(self):
         assert self.state == "init"
         self.state = "in switch"
         if not isinstance(self.control.type, IntType):
             self.control = TypeCaster.castTo(IntType(True, 64), self.control)
-        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.nextCaseBlockName)
-        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.exitBlockName)
+        CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' % 
+            (self.nextCaseBlockName, self.nextCaseBlockName))
+        CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' % 
+            (self.exitBlockName, self.exitBlockName))
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.nextCaseBlockName)
     def startBreak(self):
         assert self.state == "in switch"
@@ -287,6 +290,7 @@ class SwitchGenerator(object):
     def endBreak(self):
         assert self.state == "in break"
         self.state = "in switch"
+        self.previousCaseHasBreak = True
         pass
     def addCase(self, case):
         assert self.state == "in switch"
@@ -298,10 +302,14 @@ class SwitchGenerator(object):
         self.nextCaseBodyBlockName = self.nextCaseBlockName + "_body"
 
         #Jump to the body of this case. If the previous case body has 'break', this 'br' instruction will be eliminated by LLVM
-        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % caseBodyBlockName)
-        CodeEmitter.appendLine("builder->CreateBr(%s);" % caseBodyBlockName)
+        CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
+            (caseBodyBlockName, caseBodyBlockName))
+        if not self.previousCaseHasBreak:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % caseBodyBlockName)
+        self.previousCaseHasBreak = False
 
-        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.nextCaseBlockName)
+        CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
+            (self.nextCaseBlockName, self.nextCaseBlockName))
 
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % caseBlockName)
         caseResult = case.translate()
@@ -314,16 +322,20 @@ class SwitchGenerator(object):
     def addDefault(self):
         assert self.state == "in switch"
         self.defaultBodyBlockName = "default_body_%d" % Temp.getTempId()
-        CodeEmitter.appendLine("BasicBlock *%s = builder->CreateBlock();" % self.defaultBodyBlockName)
-        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
+        CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
+            (self.defaultBodyBlockName, self.defaultBodyBlockName))
+        if not self.previousCaseHasBreak:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
+        self.previousCaseHasBreak = False
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.defaultBodyBlockName)
 
     def endSwitch(self):
         assert self.state == "in switch"
         self.state = "out of switch"
 
-        # let the last case body jump to exit
-        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        # let the last case body jump to exit if it does not has a break
+        if not self.previousCaseHasBreak:
+            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.nextCaseBlockName)
         if self.defaultBodyBlockName != None:
             CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
