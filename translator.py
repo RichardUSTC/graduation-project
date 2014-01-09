@@ -62,9 +62,11 @@ class CodeEmitter(object):
         cls.regexBuilder = re.compile("(?<!\w)builder(?!\w)")
         cls.regexContext = re.compile("(?<!\w)context(?!\w)")
         cls.regexModule = re.compile("(?<!\w)module(?!\w)")
+        cls.regexExecutionEngine = re.compile("(?<!\w)execution_engine(?!\w)")
         cls.hasBuilder = False
         cls.hasContext = False
         cls.hasModule = False
+        cls.hasExecutionEngine = False
         Temp.reset()
     @classmethod
     def appendHelper(cls, code):
@@ -78,6 +80,9 @@ class CodeEmitter(object):
         if cls.hasModule==False and cls.regexModule.search(code) != None:
             cls.hasModule = True
             cls.code = "Module* module = Translator::getModule();\n" + cls.code
+        if cls.hasExecutionEngine == False and cls.regexExecutionEngine.search(code) != None:
+            cls.hasExecutionEngine = True
+            cls.code = "ExecutionEngine *execution_engine = Translator::getEE();\n" + cls.code
     @classmethod
     def append(cls, code):
         cls.appendHelper(code)
