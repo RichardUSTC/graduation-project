@@ -253,11 +253,27 @@ class LoopGenerator(object):
     def startBreak(self):
         assert self.state == "start loop body"
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        # Add a basic block and no one will reach it, then it will be eliminated by LLVM.
+        # This trick is to ease the translation of branches with 'break' statement.
+        tempBlockName = "never_been_reached_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (tempBlockName, tempBlockName))
+        CodeEmitter.append("builder->SetInsertPoint(%s);" % tempBlockName)
+        # add an 'unreachable' instruction for safety.
+        CodeEmitter.append("builder->CreateUnreachable();")
     def endBreak(self):
         pass
     def startContinue(self):
         assert self.state == "start loop body"
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.postLoopBodyBlockName)
+        # Add a basic block and no one will reach it, then it will be eliminated by LLVM.
+        # This trick is to ease the translation of branches with 'continue' statement.
+        tempBlockName = "never_been_reached_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (tempBlockName, tempBlockName))
+        CodeEmitter.append("builder->SetInsertPoint(%s);" % tempBlockName)
+        # add an 'unreachable' instruction for safety.
+        CodeEmitter.append("builder->CreateUnreachable();")
     def endContinue(self):
         pass
 
@@ -271,7 +287,6 @@ class SwitchGenerator(object):
         self.defaultBodyBlockName = None
         self.state = "init"
         self.isDefaultAtLast = False
-        self.previousCaseHasBreak = True
     def startSwtich(self):
         assert self.state == "init"
         self.state = "in switch"
@@ -282,15 +297,31 @@ class SwitchGenerator(object):
         CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' % 
             (self.exitBlockName, self.exitBlockName))
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.nextCaseBlockName)
+
+        # Add a basic block and no one will reach it, then it will be eliminated by LLVM.
+        # This trick is to ease the translation of 'case' statement.
+        tempBlockName = "never_been_reached_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (tempBlockName, tempBlockName))
+        CodeEmitter.append("builder->SetInsertPoint(%s);" % tempBlockName)
+        # add an 'unreachable' instruction for safety.
+        CodeEmitter.append("builder->CreateUnreachable();")
     def startBreak(self):
         assert self.state == "in switch"
         self.state = "in break"
         CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        # Add a basic block and no one will reach it, then it will be eliminated by LLVM.
+        # This trick is to ease the translation of branches and cases with 'break' statement.
+        tempBlockName = "never_been_reached_%d" % Temp.getTempId()
+        CodeEmitter.appendLine("BasicBlock *%s = BasicBlock::Create(context, \"%s\", Translator::getCurFunc());" %
+            (tempBlockName, tempBlockName))
+        CodeEmitter.append("builder->SetInsertPoint(%s);" % tempBlockName)
+        # add an 'unreachable' instruction for safety.
+        CodeEmitter.append("builder->CreateUnreachable();")
         pass
     def endBreak(self):
         assert self.state == "in break"
         self.state = "in switch"
-        self.previousCaseHasBreak = True
         pass
     def addCase(self, case):
         assert self.state == "in switch"
@@ -304,9 +335,7 @@ class SwitchGenerator(object):
         #Jump to the body of this case. If the previous case body has 'break', this 'br' instruction will be eliminated by LLVM
         CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
             (caseBodyBlockName, caseBodyBlockName))
-        if not self.previousCaseHasBreak:
-            CodeEmitter.appendLine("builder->CreateBr(%s);" % caseBodyBlockName)
-        self.previousCaseHasBreak = False
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % caseBodyBlockName)
 
         CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
             (self.nextCaseBlockName, self.nextCaseBlockName))
@@ -324,9 +353,7 @@ class SwitchGenerator(object):
         self.defaultBodyBlockName = "default_body_%d" % Temp.getTempId()
         CodeEmitter.appendLine('BasicBlock *%s = BasicBlock::Create(context, "%s", Translator::getCurFunc());' %
             (self.defaultBodyBlockName, self.defaultBodyBlockName))
-        if not self.previousCaseHasBreak:
-            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
-        self.previousCaseHasBreak = False
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.defaultBodyBlockName)
 
     def endSwitch(self):
@@ -334,8 +361,7 @@ class SwitchGenerator(object):
         self.state = "out of switch"
 
         # let the last case body jump to exit if it does not has a break
-        if not self.previousCaseHasBreak:
-            CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
+        CodeEmitter.appendLine("builder->CreateBr(%s);" % self.exitBlockName)
         CodeEmitter.appendLine("builder->SetInsertPoint(%s);" % self.nextCaseBlockName)
         if self.defaultBodyBlockName != None:
             CodeEmitter.appendLine("builder->CreateBr(%s);" % self.defaultBodyBlockName)
@@ -814,7 +840,7 @@ class Operand(Variable):
 class IntConstantVariable(Variable):
     def translate(self):
         value = "%s_%d" % (self.name, Temp.getTempId())
-        CodeEmitter.appendLine("Value *%s = getImm(%s);" % (value, self.name))
+        CodeEmitter.appendLine("Value *%s = getImm%d(%s);" % (value, self.type.size, self.name))
         return TranslationResult(self.type, value)
     def getPointer(self):
         raise UnhandledTranslationError
