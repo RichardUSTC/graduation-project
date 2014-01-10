@@ -1254,10 +1254,17 @@ class FunctionCallExpression(Expression):
         resultName = Temp.getTempName()
         functionName = str(self.function)
         if functionName in ("findCarry", "findOverflow", "findNegative", "findZero"):
-            width = self.arguments[0].value
+            width = int(self.arguments[0].value)
             argumentsResult = [ argument.translate() for argument in self.arguments[1:] ]
+            # fix bug for immediate numbers
+            def convert (result):
+                if result.type.size == width:
+                    return result
+                else:
+                    return TypeCaster.castTo(IntType(True, width), result)
+            argumentsResult = [ convert(result) for result in argumentsResult ]
             argumentsString = ",".join([result.value for result in argumentsResult])
-            code = "Value *%s = Translator::%s(this, %s, %s);" % (resultName, functionName, width, argumentsString)
+            code = "Value *%s = Translator::%s(this, %d, %s);" % (resultName, functionName, width, argumentsString)
             CodeEmitter.appendLine(code)
             castResultName = Temp.getTempName()
             typeName = IntType(False, 1).getIRType()
